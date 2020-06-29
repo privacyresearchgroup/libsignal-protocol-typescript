@@ -1,0 +1,31 @@
+{
+  "name": "libsignal-protocol-typescript",
+  "version": "0.0.0",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "author": "Rolfe Schmidt <rolfeschmidt@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest --config jestconfig.json",
+    "lint": "eslint -c .eslintrc.js  '**/*.ts'",
+    "format": "prettier '**/{*.{js?(on),ts?(x),md},.*.js?(on)}' --write --list-different --config prettier.config.js",
+    "prepare": "yarn run build",
+    "build": "tsc -d",
+    "prepublishOnly": "yarn run lint",
+    "preversion": "yarn run lint && yarn test",
+    "version": "yarn run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.3",
+    "@typescript-eslint/eslint-plugin": "^3.4.0",
+    "@typescript-eslint/parser": "^3.4.0",
+    "eslint": "^7.3.1",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.1.0",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.1",
+    "typescript": "^3.9.5"
+  }
+}
