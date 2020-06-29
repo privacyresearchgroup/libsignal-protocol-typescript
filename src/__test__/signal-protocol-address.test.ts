@@ -2,7 +2,7 @@ import { SignalProtocolAddress } from '../signal-protocol-address'
 
 const name = 'name'
 const deviceId = 42
-var serialized = 'name.42'
+const serialized = 'name.42'
 
 test('getName', () => {
     const address = new SignalProtocolAddress(name, 1)
@@ -30,4 +30,12 @@ test('fromString throws on bad inputs', () => {
             SignalProtocolAddress.fromString(bad as string)
         }).toThrow()
     }
+})
+
+test('fromString constructs the address', () => {
+    const address = SignalProtocolAddress.fromString(serialized)
+    expect(address.getDeviceId()).toBe(deviceId)
+    expect(address.deviceId).toBe(deviceId)
+    expect(address.getName()).toBe(name)
+    expect(address.name).toBe(name)
 })
