@@ -27,5 +27,11 @@
     "prettier": "^2.0.5",
     "ts-jest": "^26.1.1",
     "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "@types/bytebuffer": "^5.0.41",
+    "@types/long": "^4.0.1",
+    "bytebuffer": "^5.0.1",
+    "long": "^4.0.0"
   }
 }
