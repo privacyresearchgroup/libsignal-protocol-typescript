@@ -92,8 +92,6 @@ function randomBytes(numBytes: number): ArrayBuffer {
 test('returns the correct fingerprint', async () => {
     const generator = new FingerprintGenerator(5200)
     const f = await generator.createFor(alice.identifier, alice.key, bob.identifier, bob.key)
-    console.log('f1=', f)
-    console.log('FINGERPRINT1=', FINGERPRINT)
     expect(f).toBe(FINGERPRINT)
 })
 
@@ -101,8 +99,6 @@ test('alice and bob results match', async () => {
     const generator = new FingerprintGenerator(1024) // 1024
     const a = await generator.createFor(alice.identifier, alice.key, bob.identifier, bob.key)
     const b = await generator.createFor(bob.identifier, bob.key, alice.identifier, alice.key)
-    console.log('a2=', a)
-    console.log('b2=', b)
     expect(a).toBe(b)
 })
 
@@ -110,20 +106,13 @@ test('alice and !bob results mismatch', async () => {
     const generator = new FingerprintGenerator(1024) // 1024
     const a = await generator.createFor(alice.identifier, alice.key, '+15558675309', bob.key)
     const b = await generator.createFor(bob.identifier, bob.key, alice.identifier, alice.key)
-    console.log('a3=', a)
-    console.log('b3=', b)
-
     expect(a).not.toBe(b)
 })
 
 test('alice and mitm results mismatch', async () => {
-    //var mitm = libsignal.crypto.getRandomBytes(33)
-
     const mitm = randomBytes(33)
     const generator = new FingerprintGenerator(1024) //1024
     const a = await generator.createFor(alice.identifier, alice.key, bob.identifier, mitm)
     const b = await generator.createFor(bob.identifier, bob.key, alice.identifier, alice.key)
-    console.log('a4=', a)
-    console.log('b4=', b)
     expect(a).not.toBe(b)
 })
