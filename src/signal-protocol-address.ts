@@ -9,7 +9,12 @@ export class SignalProtocolAddress implements SignalProtocolAddressType {
         return new SignalProtocolAddress(parts[0], parseInt(parts[1]))
     }
 
-    constructor(private _name: string, private _deviceId: number) {}
+    private _name: string
+    private _deviceId: number
+    constructor(_name: string, _deviceId: number) {
+        this._name = _name
+        this._deviceId = _deviceId
+    }
 
     // Readonly properties
     get name(): string {
