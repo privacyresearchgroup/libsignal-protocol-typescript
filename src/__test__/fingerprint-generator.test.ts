@@ -96,7 +96,7 @@ test('returns the correct fingerprint', async () => {
     console.log('FINGERPRINT1=', FINGERPRINT)
     expect(f).toBe(FINGERPRINT)
 })
-/*
+
 test('alice and bob results match', async () => {
     const generator = new FingerprintGenerator(1024) // 1024
     const a = await generator.createFor(alice.identifier, alice.key, bob.identifier, bob.key)
@@ -127,4 +127,3 @@ test('alice and mitm results mismatch', async () => {
     console.log('b4=', b)
     expect(a).not.toBe(b)
 })
-*/
