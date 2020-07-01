@@ -11,7 +11,7 @@ export interface FingerprintGeneratorType {
         localIdentityKey: ArrayBuffer,
         remoteIdentifier: string,
         remoteIdentityKey: ArrayBuffer
-    ) => string
+    ) => Promise<string>
 }
 
 export interface KeyPairType {
