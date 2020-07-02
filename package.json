@@ -29,6 +29,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "@rolfe/curve25519-typescript": "^0.0.3",
     "@types/bytebuffer": "^5.0.41",
     "@types/long": "^4.0.1",
     "bytebuffer": "^5.0.1",

@@ -464,6 +464,11 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
+"@rolfe/curve25519-typescript@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@rolfe/curve25519-typescript/-/curve25519-typescript-0.0.3.tgz#874968856c842730a0b37e72afb950ef2545572b"
+  integrity sha512-b7GNsjTyUCUIAFIH7dKc9SQosApG/Wko9zYKX9BqKTYbAJOUs0psrQEo7N3LZUNMlIjrt+XuHvvF+CI4JvT23A==
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.0.tgz#c8d68821a854c555bba172f3b06959a0039b236d"

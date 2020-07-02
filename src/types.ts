@@ -41,6 +41,7 @@ export interface RecordType {
 }
 
 // TODO: any????
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SessionRecordType = any
 
 export interface StorageType {
