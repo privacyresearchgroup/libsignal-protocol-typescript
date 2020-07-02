@@ -25,8 +25,7 @@ export class FingerprintGenerator implements FingerprintGeneratorType {
 }
 
 async function getDisplayStringFor(identifier: string, key: ArrayBuffer, iterations: number): Promise<string> {
-    const bb = ByteBuffer.concat([shortToArrayBuffer(FingerprintGenerator.VERSION), key, identifier])
-    const bytes = bb.toArrayBuffer()
+    const bytes = ByteBuffer.concat([shortToArrayBuffer(FingerprintGenerator.VERSION), key, identifier]).toArrayBuffer()
     const hash = await iterateHash(bytes, key, iterations)
     const output = new Uint8Array(hash)
     return (
@@ -41,17 +40,16 @@ async function getDisplayStringFor(identifier: string, key: ArrayBuffer, iterati
 
 async function iterateHash(data: ArrayBuffer, key: ArrayBuffer, count: number): Promise<ArrayBuffer> {
     const data1 = ByteBuffer.concat([data, key]).toArrayBuffer()
-    const result = (await msrcrypto.subtle.digest({ name: 'SHA-512' }, data1)) as ArrayBuffer
+    const result = await msrcrypto.subtle.digest({ name: 'SHA-512' }, data1)
 
     if (--count === 0) {
         return result
     } else {
-        const r1 = new Uint8Array(result)
-        return iterateHash(r1, key, count)
+        return iterateHash(result, key, count)
     }
 }
 
-function getEncodedChunk(hash, offset): string {
+function getEncodedChunk(hash: Uint8Array, offset: number): string {
     const chunk =
         (hash[offset] * Math.pow(2, 32) +
             hash[offset + 1] * Math.pow(2, 24) +
