@@ -5,7 +5,7 @@ import ByteBuffer from 'bytebuffer'
 const msrcrypto = require('../lib/msrcrypto')
 
 export class FingerprintGenerator implements FingerprintGeneratorType {
-    VERSION = 0
+    static VERSION = 0
 
     async createFor(
         localIdentifier: string,
@@ -25,7 +25,7 @@ export class FingerprintGenerator implements FingerprintGeneratorType {
 }
 
 async function getDisplayStringFor(identifier: string, key: ArrayBuffer, iterations: number): Promise<string> {
-    const bb = ByteBuffer.concat([Uint8Array.from([0, 0]), key, identifier])
+    const bb = ByteBuffer.concat([shortToArrayBuffer(FingerprintGenerator.VERSION), key, identifier])
     const bytes = bb.toArrayBuffer()
     const hash = await iterateHash(bytes, key, iterations)
     const output = new Uint8Array(hash)
@@ -64,4 +64,8 @@ function getEncodedChunk(hash, offset): string {
         s = '0' + s
     }
     return s
+}
+
+function shortToArrayBuffer(number) {
+    return new Uint16Array([number]).buffer
 }

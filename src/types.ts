@@ -68,3 +68,11 @@ export interface CurveType {
     calculateSignature: (privKey: ArrayBuffer, message: ArrayBuffer) => ArrayBuffer | Promise<ArrayBuffer>
     validatePubKeyFormat: (buffer: ArrayBuffer) => ArrayBuffer
 }
+
+export interface AsyncCurveType {
+    generateKeyPair: () => Promise<KeyPairType>
+    createKeyPair: (privKey: ArrayBuffer) => Promise<KeyPairType>
+    calculateAgreement: (pubKey: ArrayBuffer, privKey: ArrayBuffer) => Promise<ArrayBuffer>
+    verifySignature: (pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer) => Promise<boolean>
+    calculateSignature: (privKey: ArrayBuffer, message: ArrayBuffer) => Promise<ArrayBuffer>
+}
