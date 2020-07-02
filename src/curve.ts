@@ -43,7 +43,7 @@ export class AsyncCurve {
     calculateAgreement(pubKey: ArrayBuffer, privKey: ArrayBuffer): Promise<ArrayBuffer> {
         return this._curve.ECDHE(pubKey, privKey)
     }
-    verifySignature(pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer): Promise<void> {
+    verifySignature(pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer): Promise<boolean> {
         return this._curve.Ed25519Verify(pubKey, msg, sig)
     }
     calculateSignature(privKey: ArrayBuffer, message: ArrayBuffer): Promise<ArrayBuffer> {

@@ -62,5 +62,10 @@ test(`Ed25519Verify throws on bad signature`, async () => {
 })
 
 test(`Ed25519Verify does not throw on good signature`, async () => {
-    await Internal.crypto.Ed25519Verify(pub, msg, sig)
+    const result = await Internal.crypto.Ed25519Verify(pub, msg, sig)
+
+    // These functions return false on valid signature! The async ones
+    // throw an error on invalid signature.  The synchronous ones return
+    // true on invalid signature.
+    expect(result).toBe(false)
 })

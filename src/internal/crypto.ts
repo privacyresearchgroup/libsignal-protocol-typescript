@@ -32,7 +32,7 @@ export class Crypto {
         return this._curve.Ed25519Sign(privKey, message)
     }
 
-    Ed25519Verify(pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer): Promise<void> {
+    Ed25519Verify(pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer): Promise<boolean> {
         return this._curve.Ed25519Verify(pubKey, msg, sig)
     }
 }

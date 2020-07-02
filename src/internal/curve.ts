@@ -89,7 +89,7 @@ export class AsyncCurve {
         return this._curve25519.sign(privKey, message)
     }
 
-    async Ed25519Verify(pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer): Promise<void> {
+    async Ed25519Verify(pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer): Promise<boolean> {
         pubKey = validatePubKeyFormat(pubKey)
 
         if (pubKey === undefined || pubKey.byteLength != 32) {
@@ -104,9 +104,13 @@ export class AsyncCurve {
             throw new Error('Invalid signature')
         }
 
-        if (await this._curve25519.verify(pubKey, msg, sig)) {
+        const verifyResult = await this._curve25519.verify(pubKey, msg, sig)
+
+        if (verifyResult) {
             throw new Error('Invalid signature')
         }
+
+        return verifyResult
     }
 }
 
