@@ -17,8 +17,8 @@ export class Crypto {
         return Uint8Array.from(bytes).buffer.slice(0)
     }
 
-    createKeyPair(privKey: ArrayBuffer | undefined): Promise<KeyPairType> {
-        if (privKey === undefined) {
+    createKeyPair(privKey?: ArrayBuffer): Promise<KeyPairType> {
+        if (!privKey) {
             privKey = Crypto.getRandomBytes(32)
         }
         return this._curve.createKeyPair(privKey)
@@ -32,7 +32,9 @@ export class Crypto {
         return this._curve.Ed25519Sign(privKey, message)
     }
 
-    Ed25519Verify(pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer): Promise<boolean> {
+    Ed25519Verify(pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer): Promise<void> {
         return this._curve.Ed25519Verify(pubKey, msg, sig)
     }
 }
+
+export const crypto = new Crypto()
