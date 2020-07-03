@@ -90,12 +90,14 @@ function randomBytes(numBytes: number): ArrayBuffer {
 }
 
 test('returns the correct fingerprint', async () => {
+    jest.setTimeout(20000)
     const generator = new FingerprintGenerator(5200)
     const f = await generator.createFor(alice.identifier, alice.key, bob.identifier, bob.key)
     expect(f).toBe(FINGERPRINT)
 })
 
 test('alice and bob results match', async () => {
+    jest.setTimeout(10000)
     const generator = new FingerprintGenerator(1024) // 1024
     const a = await generator.createFor(alice.identifier, alice.key, bob.identifier, bob.key)
     const b = await generator.createFor(bob.identifier, bob.key, alice.identifier, alice.key)
@@ -103,6 +105,7 @@ test('alice and bob results match', async () => {
 })
 
 test('alice and !bob results mismatch', async () => {
+    jest.setTimeout(10000)
     const generator = new FingerprintGenerator(1024) // 1024
     const a = await generator.createFor(alice.identifier, alice.key, '+15558675309', bob.key)
     const b = await generator.createFor(bob.identifier, bob.key, alice.identifier, alice.key)
@@ -110,6 +113,7 @@ test('alice and !bob results mismatch', async () => {
 })
 
 test('alice and mitm results mismatch', async () => {
+    jest.setTimeout(10000)
     const mitm = randomBytes(33)
     const generator = new FingerprintGenerator(1024) //1024
     const a = await generator.createFor(alice.identifier, alice.key, bob.identifier, mitm)
