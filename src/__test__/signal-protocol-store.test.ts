@@ -1,7 +1,7 @@
 import { SignalProtocolAddress } from '../signal-protocol-address'
 import { SignalProtocolStore } from './storage-type'
 import * as Internal from '../internal'
-import { hexToArrayBuffer, assertEqualArrayBuffers } from '../__test-utils__/utils'
+import { assertEqualArrayBuffers } from '../__test-utils__/utils'
 
 function randomBytes(numBytes: number): ArrayBuffer {
     const bytes = Array(numBytes)
@@ -39,15 +39,22 @@ test('getLocalRegistrationId retrieves my registration id', async () => {
 test('getIdentityKeyPair retrieves my identity key', async () => {
     const key = await store.getIdentityKeyPair()
 
-    assertEqualArrayBuffers(key.pubKey, identityKey.pubKey)
-    assertEqualArrayBuffers(key.privKey, identityKey.privKey)
+    expect(key).toBeDefined()
+    if (key) {
+        // we know we get here by previous assertion
+        assertEqualArrayBuffers(key.pubKey, identityKey.pubKey)
+        assertEqualArrayBuffers(key.privKey, identityKey.privKey)
+    }
 })
 
 test('saveIdentity stores identity keys', async () => {
     const testKey = await keyPairPromise
     await store.saveIdentity(address.toString(), testKey.pubKey)
     const key = await store.loadIdentityKey(number)
-    assertEqualArrayBuffers(key, testKey.pubKey)
+    expect(key).toBeDefined()
+    if (key) {
+        assertEqualArrayBuffers(key, testKey.pubKey)
+    }
 })
 
 test('isTrustedIdentity returns true if a key is trusted', async () => {
@@ -83,8 +90,11 @@ test('storePreKey stores prekeys', async () => {
     const address = new SignalProtocolAddress(number, 1)
     await store.storePreKey(address.toString(), testKey)
     const key = await store.loadPreKey(address.toString())
-    assertEqualArrayBuffers(key.pubKey, testKey.pubKey)
-    assertEqualArrayBuffers(key.privKey, testKey.privKey)
+    expect(key).toBeDefined()
+    if (key) {
+        assertEqualArrayBuffers(key.pubKey, testKey.pubKey)
+        assertEqualArrayBuffers(key.privKey, testKey.privKey)
+    }
 })
 
 test('loadPreKey returns prekeys that exist', async () => {
@@ -93,11 +103,15 @@ test('loadPreKey returns prekeys that exist', async () => {
     await store.storePreKey(address.toString(), testKey)
     const key = await store.loadPreKey(address.toString())
 
-    assertEqualArrayBuffers(key.pubKey, testKey.pubKey)
-    assertEqualArrayBuffers(key.privKey, testKey.privKey)
+    expect(key).toBeDefined()
+    if (key) {
+        assertEqualArrayBuffers(key.pubKey, testKey.pubKey)
+        assertEqualArrayBuffers(key.privKey, testKey.privKey)
+    }
 })
 
 test('returns undefined for prekeys that do not exist', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const address = new SignalProtocolAddress(number, 2)
     const key = await store.loadPreKey('2')
     expect(key).toBeUndefined()
@@ -129,15 +143,21 @@ test('storeSignedPreKey stores signed prekeys', async () => {
     const testKey = await keyPairPromise
     await store.storeSignedPreKey(3, testKey)
     const key = await store.loadSignedPreKey(3)
-    assertEqualArrayBuffers(key.pubKey, testKey.pubKey)
-    assertEqualArrayBuffers(key.privKey, testKey.privKey)
+    expect(key).toBeDefined()
+    if (key) {
+        assertEqualArrayBuffers(key.pubKey, testKey.pubKey)
+        assertEqualArrayBuffers(key.privKey, testKey.privKey)
+    }
 })
 test('loadSignedPreKey returns prekeys that exist', async () => {
     const testKey = await keyPairPromise
     await store.storeSignedPreKey(1, testKey)
     const key = await store.loadSignedPreKey(1)
-    assertEqualArrayBuffers(key.pubKey, testKey.pubKey)
-    assertEqualArrayBuffers(key.privKey, testKey.privKey)
+    expect(key).toBeDefined()
+    if (key) {
+        assertEqualArrayBuffers(key.pubKey, testKey.pubKey)
+        assertEqualArrayBuffers(key.privKey, testKey.privKey)
+    }
 })
 it('returns undefined for prekeys that do not exist', async () => {
     const testKey = await keyPairPromise
@@ -177,14 +197,21 @@ test('stores sessions encoded as array buffers', async () => {
     const testRecord = new Uint8Array([1, 2, 3]).buffer
     await store.storeSession(address.toString(), testRecord)
     const record = await store.loadSession(address.toString())
-    assertEqualArrayBuffers(testRecord, record)
+    expect(record).toBeDefined()
+    if (record) {
+        assertEqualArrayBuffers(testRecord, record)
+    }
 })
 test('loadSession returns sessions that exist', async () => {
     const address = new SignalProtocolAddress(number, 1)
     const testRecord = 'an opaque string'
-    await store.storeSession(address.toString(), testRecord)
+    const enc = new TextEncoder()
+    await store.storeSession(address.toString(), enc.encode(testRecord).buffer)
     const record = await store.loadSession(address.toString())
-    expect(record).toBe(testRecord)
+    expect(record).toBeDefined()
+    if (record) {
+        assertEqualArrayBuffers(record, enc.encode(testRecord).buffer)
+    }
 })
 test('returns undefined for sessions that do not exist', async () => {
     const address = new SignalProtocolAddress(number, 2)
@@ -193,7 +220,8 @@ test('returns undefined for sessions that do not exist', async () => {
 })
 test('removeSession deletes sessions', async () => {
     const address = new SignalProtocolAddress(number, 1)
-    await store.storeSession(address.toString(), testRecord)
+    const enc = new TextEncoder()
+    await store.storeSession(address.toString(), enc.encode(testRecord).buffer)
     await store.removeSession(address.toString())
     const record = await store.loadSession(address.toString())
     expect(record).toBeUndefined()
@@ -205,11 +233,13 @@ test('removeAllSessions removes all sessions for a number', async () => {
     })
     await devices.forEach(function (encodedNumber) {
         console.log(encodedNumber)
-        store.storeSession(encodedNumber, testRecord + encodedNumber)
+        const enc = new TextEncoder()
+
+        store.storeSession(encodedNumber, enc.encode(testRecord + encodedNumber).buffer)
     })
-    const record = await store.removeAllSessions(number)
+    await store.removeAllSessions(number)
     const records = await Promise.all(devices.map(store.loadSession.bind(store)))
-    for (var i in records) {
+    for (const i in records) {
         expect(records[i]).toBeUndefined()
     }
 })
