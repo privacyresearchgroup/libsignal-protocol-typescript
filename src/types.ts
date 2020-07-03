@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 export interface SignalProtocolAddressType {
     readonly name: string
     readonly deviceId: number
@@ -75,4 +77,18 @@ export interface AsyncCurveType {
     calculateAgreement: (pubKey: ArrayBuffer, privKey: ArrayBuffer) => Promise<ArrayBuffer>
     verifySignature: (pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer) => Promise<boolean>
     calculateSignature: (privKey: ArrayBuffer, message: ArrayBuffer) => Promise<ArrayBuffer>
+}
+
+// Type guards
+
+export function isKeyPairType(kp: any): kp is KeyPairType {
+    return !!(kp?.privKey && kp?.pubKey)
+}
+
+export function isPreKeyType(pk: any): pk is PreKeyType {
+    return typeof pk?.keyId === 'number' && isKeyPairType(pk?.keyPair)
+}
+
+export function isSignedPReKeyType(spk: any): spk is SignedPreKeyType {
+    return spk?.signature && isPreKeyType(spk)
 }
