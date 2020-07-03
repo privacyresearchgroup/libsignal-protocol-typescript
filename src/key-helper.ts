@@ -7,7 +7,7 @@ export class KeyHelper {
     }
 
     static generateRegistrationId(): number {
-        const registrationId = new Uint16Array(Internal.Crypto.getRandomBytes(2))[0]
+        const registrationId = new Uint16Array(Internal.crypto.getRandomBytes(2))[0]
         return registrationId & 0x3fff
     }
 
