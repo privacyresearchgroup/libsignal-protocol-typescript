@@ -10,7 +10,7 @@ export class Curve {
     }
 
     generateKeyPair(): KeyPairType {
-        const privKey = Internal.Crypto.getRandomBytes(32)
+        const privKey = Internal.crypto.getRandomBytes(32)
         return this._curve.createKeyPair(privKey)
     }
     createKeyPair(privKey: ArrayBuffer): KeyPairType {
@@ -34,7 +34,7 @@ export class AsyncCurve implements AsyncCurveType {
     }
 
     generateKeyPair(): Promise<KeyPairType> {
-        const privKey = Internal.Crypto.getRandomBytes(32)
+        const privKey = Internal.crypto.getRandomBytes(32)
         return this._curve.createKeyPair(privKey)
     }
 

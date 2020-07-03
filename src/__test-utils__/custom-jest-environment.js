@@ -7,6 +7,8 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const NodeEnvironment = require('jest-environment-node')
 
+class XMLHttpRequest {}
+
 class MyEnvironment extends NodeEnvironment {
   constructor(config) {
     super(
@@ -16,6 +18,8 @@ class MyEnvironment extends NodeEnvironment {
           Uint16Array: Uint16Array,
           Uint8Array: Uint8Array,
           ArrayBuffer: ArrayBuffer,
+          window: {},
+          XMLHttpRequest: XMLHttpRequest,
         }),
       })
     )

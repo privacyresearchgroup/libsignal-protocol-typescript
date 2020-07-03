@@ -69,3 +69,89 @@ test(`Ed25519Verify does not throw on good signature`, async () => {
     // true on invalid signature.
     expect(result).toBe(false)
 })
+
+describe('Crypto', function () {
+    describe('Encrypt AES-CBC', function () {
+        it('works', function (done) {
+            const key = hexToArrayBuffer('603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4')
+            const iv = hexToArrayBuffer('000102030405060708090a0b0c0d0e0f')
+            const plaintext = hexToArrayBuffer(
+                '6bc1bee22e409f96e93d7e117393172aae2d8a571e03ac9c9eb76fac45af8e5130c81c46a35ce411e5fbc1191a0a52eff69f2445df4f9b17ad2b417be66c3710'
+            )
+            const ciphertext = hexToArrayBuffer(
+                'f58c4c04d6e5f1ba779eabfb5f7bfbd69cfc4e967edb808d679f777bc6702c7d39f23369a9d9bacfa530e26304231461b2eb05e2c39be9fcda6c19078c6a9d1b3f461796d6b0d6b2e0c2a72b4d80e644'
+            )
+            Internal.crypto
+                .encrypt(key, plaintext, iv)
+                .then(function (result) {
+                    assertEqualArrayBuffers(result, ciphertext)
+                })
+                .then(done)
+                .catch(done)
+        })
+    })
+
+    describe('Decrypt AES-CBC', function () {
+        it('works', function (done) {
+            const key = hexToArrayBuffer('603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4')
+            const iv = hexToArrayBuffer('000102030405060708090a0b0c0d0e0f')
+            const plaintext = hexToArrayBuffer(
+                '6bc1bee22e409f96e93d7e117393172aae2d8a571e03ac9c9eb76fac45af8e5130c81c46a35ce411e5fbc1191a0a52eff69f2445df4f9b17ad2b417be66c3710'
+            )
+            const ciphertext = hexToArrayBuffer(
+                'f58c4c04d6e5f1ba779eabfb5f7bfbd69cfc4e967edb808d679f777bc6702c7d39f23369a9d9bacfa530e26304231461b2eb05e2c39be9fcda6c19078c6a9d1b3f461796d6b0d6b2e0c2a72b4d80e644'
+            )
+            Internal.crypto
+                .decrypt(key, ciphertext, iv)
+                .then(function (result) {
+                    assertEqualArrayBuffers(result, plaintext)
+                })
+                .then(done)
+                .catch(done)
+        })
+    })
+
+    describe('HMAC SHA-256', function () {
+        it('works', function (done) {
+            const key = hexToArrayBuffer(
+                '6f35628d65813435534b5d67fbdb54cb33403d04e843103e6399f806cb5df95febbdd61236f33245'
+            )
+            const input = hexToArrayBuffer(
+                '752cff52e4b90768558e5369e75d97c69643509a5e5904e0a386cbe4d0970ef73f918f675945a9aefe26daea27587e8dc909dd56fd0468805f834039b345f855cfe19c44b55af241fff3ffcd8045cd5c288e6c4e284c3720570b58e4d47b8feeedc52fd1401f698a209fccfa3b4c0d9a797b046a2759f82a54c41ccd7b5f592b'
+            )
+            const mac = hexToArrayBuffer('05d1243e6465ed9620c9aec1c351a186')
+            Internal.crypto
+                .sign(key, input)
+                .then(function (result) {
+                    assertEqualArrayBuffers(result.slice(0, mac.byteLength), mac)
+                })
+                .then(done)
+                .catch(done)
+        })
+    })
+
+    describe('HKDF', function () {
+        it('works', function (done) {
+            // HMAC RFC5869 Test vectors
+            const T1 = hexToArrayBuffer('3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf')
+            const T2 = hexToArrayBuffer('34007208d5b887185865')
+            const IKM = new Uint8Array(new ArrayBuffer(22))
+            for (let i = 0; i < 22; i++) IKM[i] = 11
+
+            const salt = new Uint8Array(new ArrayBuffer(13))
+            for (let i = 0; i < 13; i++) salt[i] = i
+
+            const info = new Uint8Array(new ArrayBuffer(10))
+            for (let i = 0; i < 10; i++) info[i] = 240 + i
+
+            return Internal.crypto
+                .HKDF(IKM.buffer, salt.buffer, info.buffer)
+                .then(function (OKM) {
+                    assertEqualArrayBuffers(OKM[0], T1)
+                    assertEqualArrayBuffers(OKM[1].slice(0, 10), T2)
+                })
+                .then(done)
+                .catch(done)
+        })
+    })
+})
