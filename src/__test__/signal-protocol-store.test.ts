@@ -20,16 +20,11 @@ const identityKey = {
 
 store.put('registrationId', registrationId)
 store.put('identityKey', identityKey)
-//testIdentityKeyStore(store, registrationId, identityKey)
-//testPreKeyStore(store)
-//testSignedPreKeyStore(store)
-//testSessionStore(store)
 
 const keyPairPromise = Internal.crypto.createKeyPair()
 
 const number = '+5558675309'
 const address = new SignalProtocolAddress('+5558675309', 1)
-//const testKey = await keyPairPromise
 
 test('getLocalRegistrationId retrieves my registration id', async () => {
     const reg = await store.getLocalRegistrationId()
@@ -71,20 +66,7 @@ test('returns false if a key is untrusted', async () => {
     const trusted = await store.isTrustedIdentity(number, newIdentity)
     expect(trusted).toBeFalsy()
 })
-/*
-function testPreKeyStore(store) {
-    var number = '+5558675309'
-    var testKey
-    describe('PreKeyStore', function () {
-        before(function (done) {
-            Internal.crypto
-                .createKeyPair()
-                .then(function (keyPair) {
-                    testKey = keyPair
-                })
-                .then(done, done)
-        })
-        */
+
 test('storePreKey stores prekeys', async () => {
     const testKey = await keyPairPromise
     const address = new SignalProtocolAddress(number, 1)
@@ -126,19 +108,7 @@ test('removePreKey deletes prekeys', async () => {
     const key = await store.loadPreKey(address.toString())
     expect(key).toBeUndefined()
 })
-/*
-function testSignedPreKeyStore(store) {
-    describe('SignedPreKeyStore', function () {
-        var testKey
-        before(function (done) {
-            Internal.crypto
-                .createKeyPair()
-                .then(function (keyPair) {
-                    testKey = keyPair
-                })
-                .then(done, done)
-        })
-        */
+
 test('storeSignedPreKey stores signed prekeys', async () => {
     const testKey = await keyPairPromise
     await store.storeSignedPreKey(3, testKey)
@@ -149,6 +119,7 @@ test('storeSignedPreKey stores signed prekeys', async () => {
         assertEqualArrayBuffers(key.privKey, testKey.privKey)
     }
 })
+
 test('loadSignedPreKey returns prekeys that exist', async () => {
     const testKey = await keyPairPromise
     await store.storeSignedPreKey(1, testKey)
@@ -159,12 +130,14 @@ test('loadSignedPreKey returns prekeys that exist', async () => {
         assertEqualArrayBuffers(key.privKey, testKey.privKey)
     }
 })
-it('returns undefined for prekeys that do not exist', async () => {
+
+test('returns undefined for prekeys that do not exist', async () => {
     const testKey = await keyPairPromise
     await store.storeSignedPreKey(1, testKey)
     const key = await store.loadSignedPreKey(2)
     expect(key).toBeUndefined()
 })
+
 test('removeSignedPreKey deletes signed prekeys', async () => {
     const testKey = await keyPairPromise
     await store.storeSignedPreKey(4, testKey)
@@ -175,24 +148,6 @@ test('removeSignedPreKey deletes signed prekeys', async () => {
 
 const testRecord = 'an opaque string'
 
-/*
-function testSessionStore(store) {
-    describe('SessionStore', function () {
-        var number = '+5558675309'
-        var testRecord = 'an opaque string'
-        describe('storeSession', function () {
-            var address = new SignalProtocolAddress(number, 1)
-            it('stores sessions encoded as strings', function (done) {
-                store
-                    .storeSession(address.toString(), testRecord)
-                    .then(function () {
-                        return store.loadSession(address.toString()).then(function (record) {
-                            assert.strictEqual(record, testRecord)
-                        })
-                    })
-                    .then(done, done)
-            })
-            */
 test('stores sessions encoded as array buffers', async () => {
     const testRecord = new Uint8Array([1, 2, 3]).buffer
     await store.storeSession(address.toString(), testRecord)
@@ -202,6 +157,7 @@ test('stores sessions encoded as array buffers', async () => {
         assertEqualArrayBuffers(testRecord, record)
     }
 })
+
 test('loadSession returns sessions that exist', async () => {
     const address = new SignalProtocolAddress(number, 1)
     const testRecord = 'an opaque string'
@@ -213,11 +169,13 @@ test('loadSession returns sessions that exist', async () => {
         assertEqualArrayBuffers(record, enc.encode(testRecord).buffer)
     }
 })
+
 test('returns undefined for sessions that do not exist', async () => {
     const address = new SignalProtocolAddress(number, 2)
     const record = await store.loadSession(address.toString())
     expect(record).toBeUndefined()
 })
+
 test('removeSession deletes sessions', async () => {
     const address = new SignalProtocolAddress(number, 1)
     const enc = new TextEncoder()
@@ -226,13 +184,13 @@ test('removeSession deletes sessions', async () => {
     const record = await store.loadSession(address.toString())
     expect(record).toBeUndefined()
 })
+
 test('removeAllSessions removes all sessions for a number', async () => {
     const devices = [1, 2, 3].map(function (deviceId) {
         const address = new SignalProtocolAddress(number, deviceId)
         return address.toString()
     })
     await devices.forEach(function (encodedNumber) {
-        console.log(encodedNumber)
         const enc = new TextEncoder()
 
         store.storeSession(encodedNumber, enc.encode(testRecord + encodedNumber).buffer)
