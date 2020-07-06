@@ -1,5 +1,5 @@
 {
-  "name": "libsignal-protocol-typescript",
+  "name": "@privacyresearch/libsignal-protocol-typescript",
   "version": "0.0.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -29,7 +29,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
-    "@rolfe/curve25519-typescript": "^0.0.3",
+    "@privacyresearch/curve25519-typescript": "^0.0.6",
     "@types/bytebuffer": "^5.0.41",
     "@types/long": "^4.0.1",
     "bytebuffer": "^5.0.1",
