@@ -1,5 +1,5 @@
 import { KeyPairType } from '../types'
-import { Curve25519Wrapper, AsyncCurve25519Wrapper } from '@rolfe/curve25519-typescript'
+import { Curve25519Wrapper, AsyncCurve25519Wrapper } from '@privacyresearch/curve25519-typescript'
 
 export class Curve {
     // Curve 25519 crypto
