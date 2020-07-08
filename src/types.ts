@@ -44,19 +44,28 @@ export interface RecordType {
 
 // TODO: any????
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SessionRecordType = any
+export type SessionRecordType = ArrayBuffer
+
+export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
+type StoreValue = KeyPairType | Stringable
 
 export interface StorageType {
     Direction: {
         SENDING: number
         RECEIVING: number
     }
-    getIdentityKeyPair: () => Promise<KeyPairType>
-    getLocalRegistrationId: () => Promise<number>
-    isTrustedIdentity: () => Promise<void>
-    loadPreKey: (encodedAddress: string, publicKey: ArrayBuffer | undefined, direction: number) => Promise<void>
-    loadSession: (encodedAddress: string) => Promise<SessionRecordType>
-    loadSignedPreKey: (keyId: number) => Promise<SignedPreKeyType>
+    getIdentityKeyPair: () => Promise<KeyPairType | undefined>
+    getLocalRegistrationId: () => Promise<number | undefined>
+    isTrustedIdentity: (identifier: string, identityKey: ArrayBuffer) => Promise<boolean>
+    loadPreKey: (
+        encodedAddress: string,
+        publicKey: ArrayBuffer | undefined,
+        direction: number
+    ) => Promise<KeyPairType | undefined>
+    loadSession: (encodedAddress: string) => Promise<SessionRecordType | undefined>
+
+    // TODO: should this really return a signed prekey?
+    loadSignedPreKey: (keyId: number) => Promise<KeyPairType | undefined>
     removePreKey: (keyId: number) => Promise<void>
     saveIdentity: (encodedAddress: string, publicKey: ArrayBuffer, nonblockingApproval?: boolean) => Promise<boolean>
     storeSession: (encodedAddress: string, record: SessionRecordType) => Promise<void>
