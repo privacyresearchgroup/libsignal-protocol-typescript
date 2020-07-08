@@ -9,12 +9,12 @@ test('return something', async () => {
     await Promise.all([
         SessionLock.queueJobForNumber('channel1', async () => {
             await sleep(10)
-            value += 'long'
+            value += 'xyz'
             return Promise.resolve()
         }),
     ])
 
-    expect(value).toBe('long')
+    expect(value).toBe('xyz')
 })
 
 test('return longshort', async () => {
@@ -23,13 +23,10 @@ test('return longshort', async () => {
         SessionLock.queueJobForNumber('channel1', async () => {
             await sleep(3000)
             value += 'long'
-            return Promise.resolve()
         }),
-        sleep(1000),
         SessionLock.queueJobForNumber('channel1', async () => {
             await sleep(1)
             value += 'short'
-            return Promise.resolve()
         }),
     ])
 
@@ -42,12 +39,10 @@ test('return shortlong', async () => {
         SessionLock.queueJobForNumber('channel1', async () => {
             await sleep(1)
             value += 'short'
-            return Promise.resolve()
         }),
         SessionLock.queueJobForNumber('channel1', async () => {
             await sleep(2000)
             value += 'long'
-            return Promise.resolve()
         }),
     ])
 
@@ -60,17 +55,14 @@ test('multichannel', async () => {
         SessionLock.queueJobForNumber('channel1', async () => {
             await sleep(4000)
             value += 'long'
-            return Promise.resolve()
         }),
         SessionLock.queueJobForNumber('channel2', async () => {
             await sleep(1)
             value += 'ch2'
-            return Promise.resolve()
         }),
         SessionLock.queueJobForNumber('channel1', async () => {
             await sleep(1)
             value += 'short'
-            return Promise.resolve()
         }),
     ])
 
