@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SignalProtocolAddress } from '../signal-protocol-address'
 import ByteBuffer from 'bytebuffer'
-import { isKeyPairType } from '../types'
+import { isKeyPairType, StorageType } from '../types'
 
 interface KeyPairType {
     pubKey: ArrayBuffer
@@ -35,7 +35,7 @@ function toString(thing: Stringable): string | undefined {
 
 type StoreValue = KeyPairType | Stringable // number | KeyPairType | PreKeyType | SignedPreKeyType | ArrayBuffer | undefined
 
-export class SignalProtocolStore {
+export class SignalProtocolStore implements StorageType {
     private _store: Record<string, StoreValue>
     Direction = {
         SENDING: 1,
@@ -111,6 +111,8 @@ export class SignalProtocolStore {
         }
         throw new Error(`session record is not an ArrayBuffer`)
     }
+
+    // TODO: should this really return a signed prekey?
     async loadSignedPreKey(keyId: number): Promise<KeyPairType | undefined> {
         // loadSignedPreKey: function(keyId) {
         const res = this.get('25519KeysignedKey' + keyId, undefined)
@@ -121,7 +123,7 @@ export class SignalProtocolStore {
         }
         throw new Error(`stored key has wrong type`)
     }
-    async removePreKey(keyId: string): Promise<void> {
+    async removePreKey(keyId: number): Promise<void> {
         //    removePreKey: function(keyId) {
         this.remove('25519KeypreKey' + keyId)
     }
