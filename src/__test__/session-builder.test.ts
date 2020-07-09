@@ -7,6 +7,7 @@ import { SignalProtocolStore } from './storage-type'
 
 import { generateIdentity, generatePreKeyBundle, assertEqualArrayBuffers } from '../__test-utils__/utils'
 import * as utils from '../helpers'
+import { KeyHelper } from '../key-helper'
 
 const ALICE_ADDRESS = new SignalProtocolAddress('+14151111111', 1)
 const BOB_ADDRESS = new SignalProtocolAddress('+14152222222', 1)
@@ -72,29 +73,28 @@ test('basic prekey v3: accepts a new preKey with the same identity', async () =>
     expect(sessionRecord.getOpenSession()).toBeDefined()
 })
 
-/*
 test('basic prekey v3: rejects untrusted identity keys', async () => {
-     await prep
+    await prep
 
-    KeyHelper.generateIdentityKeyPair().then(function (newIdentity) {
-        const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
-        return builder
-            .processPreKey({
-                identityKey: newIdentity.pubKey,
-                registrationId: 12356,
-            })
-            .then(function (e) {
-                assert.fail('should not be trusted')
-            })
-            .catch(function (e) {
-                assert.strictEqual(e.message, 'Identity key changed')
-                done()
-            })
-            .catch(done)
-    })
+    const newIdentity = await KeyHelper.generateIdentityKeyPair() // .then(function (newIdentity) {
+    const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
+    await expect(async () => {
+        await builder.processPreKey({
+            identityKey: newIdentity.pubKey,
+            registrationId: 12356,
+        })
+        /*.then(function (e) {
+            assert.fail('should not be trusted')
+        })
+        .catch(function (e) {
+            expect(e.message).toBe('Identity key changed')
+        })
+        */
+    }).toThrow('Identity key changed')
 })
-//})
 
+//})
+/*
 //describe('basic v3 NO PREKEY', function () {
 //    const aliceStore = new SignalProtocolStore()
 
