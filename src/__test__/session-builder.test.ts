@@ -90,7 +90,7 @@ test('basic prekey v3: rejects untrusted identity keys', async () => {
             expect(e.message).toBe('Identity key changed')
         })
         */
-    }).toThrow('Identity key changed')
+    }).rejects.toThrow('Identity key changed')
 })
 
 test('basic v3 NO PREKEY: creates a session', async () => {
@@ -155,5 +155,5 @@ test('basic v3 NO PREKEY: rejects untrusted identity keys', async () => {
         //     done()
         // })
         // .catch(done)
-    }).toThrow('Identity key changed')
+    }).rejects.toThrow('Identity key changed')
 })
