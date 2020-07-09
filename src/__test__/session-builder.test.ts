@@ -169,27 +169,24 @@ test('basic v3 NO PREKEY: accepts a new preKey with the same identity', async ()
     expect(sessionRecord.getOpenSession()).toBeDefined
 })
 
-/*
 test('basic v3 NO PREKEY: rejects untrusted identity keys', async () => {
-      await prep
+    await prep
 
-    KeyHelper.generateIdentityKeyPair().then(function (newIdentity) {
-        const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
-        return builder
-            .processPreKey({
-                identityKey: newIdentity.pubKey,
-                registrationId: 12356,
-            })
-            .then(function (e) {
-                assert.fail('should not be trusted')
-            })
-            .catch(function (e) {
-                assert.strictEqual(e.message, 'Identity key changed')
-                done()
-            })
-            .catch(done)
-    })
+    const newIdentity = await KeyHelper.generateIdentityKeyPair() //.then(function (newIdentity) {
+    const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
+
+    await expect(async () => {
+        await builder.processPreKey({
+            identityKey: newIdentity.pubKey,
+            registrationId: 12356,
+        })
+        // .then(function (e) {
+        //     assert.fail('should not be trusted')
+        // })
+        // .catch(function (e) {
+        //     assert.strictEqual(e.message, 'Identity key changed')
+        //     done()
+        // })
+        // .catch(done)
+    }).toThrow('Identity key changed')
 })
-//})
-// })
-*/
