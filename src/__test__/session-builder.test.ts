@@ -135,57 +135,41 @@ test('basic v3 NO PREKEY: creates a session', async () => {
     expect(sessionRecord.getOpenSession()).toBeDefined()
 })
 
-/*
+/*SESSIONCIPHER
 test('basic v3 NO PREKEY: the session can encrypt', async () => {
-       await prep
+    await prep
+    const ciphertext = await aliceSessionCipher.encrypt(originalMessage)
+    expect(ciphertext.type).toBe(3) // PREKEY_BUNDLE
 
-    aliceSessionCipher
-        .encrypt(originalMessage)
-        .then(function (ciphertext) {
-            assert.strictEqual(ciphertext.type, 3) // PREKEY_BUNDLE
+    const plaintext = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
 
-            return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
-        })
-        .then(function (plaintext) {
-            assertEqualArrayBuffers(plaintext, originalMessage)
-        })
-        .then(done, done)
+    assertEqualArrayBuffers(plaintext, originalMessage)
 })
+*/
 
-test('basic v3 NO PREKEY: the session can decrypt',async () => {
-       await prep
-
-    bobSessionCipher
-        .encrypt(originalMessage)
-        .then(function (ciphertext) {
-            return aliceSessionCipher.decryptWhisperMessage(ciphertext.body, 'binary')
-        })
-        .then(function (plaintext) {
-            assertEqualArrayBuffers(plaintext, originalMessage)
-        })
-        .then(done, done)
+/*SESSIONCIPHER
+test('basic v3 NO PREKEY: the session can decrypt', async () => {
+    await prep
+    const ciphertext = await bobSessionCipher.encrypt(originalMessage)
+    const plaintext = await aliceSessionCipher.decryptWhisperMessage(ciphertext.body, 'binary')
+    assertEqualArrayBuffers(plaintext, originalMessage)
 })
+*/
 
 test('basic v3 NO PREKEY: accepts a new preKey with the same identity', async () => {
-     await prep
-
-    generatePreKeyBundle(bobStore, bobPreKeyId + 1, bobSignedKeyId + 1)
-        .then(function (preKeyBundle) {
-            delete preKeyBundle.preKey
-            const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
-            return builder.processPreKey(preKeyBundle).then(function () {
-                return aliceStore.loadSession(BOB_ADDRESS.toString()).then(function (record) {
-                    assert.isDefined(record)
-                    const sessionRecord = SessionRecord.deserialize(record)
-                    assert.isTrue(sessionRecord.haveOpenSession())
-                    assert.isDefined(sessionRecord.getOpenSession())
-                    done()
-                })
-            })
-        })
-        .catch(done)
+    await prep
+    const preKeyBundle = await generatePreKeyBundle(bobStore, bobPreKeyId + 1, bobSignedKeyId + 1)
+    delete preKeyBundle.preKey
+    const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
+    await builder.processPreKey(preKeyBundle)
+    const record = await aliceStore.loadSession(BOB_ADDRESS.toString())
+    expect(record).toBeDefined()
+    const sessionRecord = SessionRecord.deserialize(record)
+    expect(sessionRecord.haveOpenSession()).toBeTruthy()
+    expect(sessionRecord.getOpenSession()).toBeDefined
 })
 
+/*
 test('basic v3 NO PREKEY: rejects untrusted identity keys', async () => {
       await prep
 
