@@ -1,4 +1,4 @@
-import { KeyPairType } from './types'
+import { KeyPairType, SignedPublicPreKeyType, PreKeyType } from './types'
 
 export enum ChainType {
     SENDING = 1,
@@ -14,7 +14,7 @@ export interface SessionType {
     indexInfo: IndexInfo
     registrationId: number
     currentRatchet: Ratchet
-    pendingPreKey: PendingPreKey
+    pendingPreKey?: PendingPreKey
 
     oldRatchetList: OldRatchetInfo[]
 
@@ -26,15 +26,16 @@ export interface SessionType {
 export interface IndexInfo {
     closed: number
     remoteIdentityKey: ArrayBuffer
-    baseKey: ArrayBuffer
-    baseKeyType: BaseKeyType
+    baseKey?: ArrayBuffer
+    baseKeyType?: BaseKeyType
 }
 
 export interface Ratchet {
-    ephemeralKeyPair: KeyPairType
+    rootKey: ArrayBuffer
+    ephemeralKeyPair?: KeyPairType
     lastRemoteEphemeralKey: ArrayBuffer
     previousCounter: number
-    added: number //timestamp
+    added?: number //timestamp
 }
 export interface OldRatchetInfo {
     ephemeralKey: ArrayBuffer
@@ -48,7 +49,7 @@ export interface Chain {
 
 export interface PendingPreKey {
     baseKey: ArrayBuffer
-    preKeyId: string
+    preKeyId?: string | number
     signedKeyId: string
 }
 
@@ -60,5 +61,12 @@ export enum EncryptionResultMessageType {
 export interface EncryptionResult {
     type: EncryptionResultMessageType
     body: ArrayBuffer
+    registrationId: number
+}
+
+export interface DeviceType {
+    identityKey: ArrayBuffer
+    signedPreKey: SignedPublicPreKeyType
+    preKey?: PreKeyType
     registrationId: number
 }
