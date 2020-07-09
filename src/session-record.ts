@@ -41,6 +41,7 @@ export class SessionRecord {
         const openSession = this.getOpenSession()
         return !!openSession && typeof openSession.registrationId === 'number'
     }
+
     getSessionByBaseKey(baseKey: ArrayBuffer): SessionType | undefined {
         const idx = util.toString(baseKey)
         if (!idx) {
@@ -53,6 +54,7 @@ export class SessionRecord {
         }
         return session
     }
+
     getSessionByRemoteEphemeralKey(remoteEphemeralKey: ArrayBuffer): SessionType | undefined {
         this.detectDuplicateOpenSessions()
         const sessions = this.sessions
@@ -65,7 +67,7 @@ export class SessionRecord {
                 if (sessions[key].indexInfo.closed == -1) {
                     openSession = sessions[key]
                 }
-                if (sessions[key][searchKey] !== undefined) {
+                if (sessions[key].chains[searchKey] !== undefined) {
                     return sessions[key]
                 }
             }
