@@ -1,5 +1,5 @@
 import { SessionBuilder } from '../session-builder'
-// import { SessionCipher } from '../session-cipher'
+//TODO import { SessionCipher } from '../session-cipher'
 import { SessionRecord } from '../session-record'
 
 import { SignalProtocolAddress } from '../signal-protocol-address'
@@ -28,8 +28,8 @@ const prep = Promise.all([generateIdentity(aliceStore), generateIdentity(bobStor
 //--
 
 const originalMessage = utils.toArrayBuffer("L'homme est condamné à être libre")
-const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
-const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
+//TODO const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
+//TODO const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
 test('basic prekey v3: creates a session', async () => {
     await prep
