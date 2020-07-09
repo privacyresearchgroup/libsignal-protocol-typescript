@@ -124,21 +124,18 @@ before(function (done) {
 // const originalMessage = util.toArrayBuffer("L'homme est condamné à être libre")
 // const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
 // const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
+*/
 
 test('basic v3 NO PREKEY: creates a session', async () => {
-       await prep
-
-    return aliceStore
-        .loadSession(BOB_ADDRESS.toString())
-        .then(function (record) {
-            assert.isDefined(record)
-            const sessionRecord = SessionRecord.deserialize(record)
-            assert.isTrue(sessionRecord.haveOpenSession())
-            assert.isDefined(sessionRecord.getOpenSession())
-        })
-        .then(done, done)
+    await prep
+    const record = await aliceStore.loadSession(BOB_ADDRESS.toString())
+    expect(record).toBeDefined()
+    const sessionRecord = SessionRecord.deserialize(record)
+    expect(sessionRecord.haveOpenSession()).toBeTruthy()
+    expect(sessionRecord.getOpenSession()).toBeDefined()
 })
 
+/*
 test('basic v3 NO PREKEY: the session can encrypt', async () => {
        await prep
 
