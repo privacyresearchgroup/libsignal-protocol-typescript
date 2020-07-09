@@ -5,16 +5,17 @@ import { SessionBuilder } from '../session-builder'
 import { SessionRecord } from '../session-record'
 import { SignalProtocolAddress } from '..'
 import { SignalProtocolStore } from './storage-type'
+import { SessionCipher } from '../session-cipher'
 
-// import * as util from '../helpers'
-// const ALICE_ADDRESS = new SignalProtocolAddress('+14151111111', 1)
+import * as util from '../helpers'
+const ALICE_ADDRESS = new SignalProtocolAddress('+14151111111', 1)
 const BOB_ADDRESS = new SignalProtocolAddress('+14152222222', 1)
 const aliceStore = new SignalProtocolStore()
 
 const bobStore = new SignalProtocolStore()
 const bobPreKeyId = 1337
 const bobSignedKeyId = 1
-// const originalMessage = util.toArrayBuffer("L'homme est condamné à être libre")
+const originalMessage = util.toArrayBuffer("L'homme est condamné à être libre")
 
 // jest.setTimeout(60 * 1000)
 beforeAll(async () => {
@@ -37,8 +38,8 @@ describe('SessionBuilder', () => {
     describe('basic prekey v3', () => {
         // const Curve = libsignal.Curve
 
-        // const aliceSessionCipher = new libsignal.SessionCipher(aliceStore, BOB_ADDRESS)
-        // const bobSessionCipher = new libsignal.SessionCipher(bobStore, ALICE_ADDRESS)
+        const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
+        const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
         test('creates a session', async () => {
             const record = await aliceStore.loadSession(BOB_ADDRESS.toString())
@@ -48,19 +49,19 @@ describe('SessionBuilder', () => {
             expect(sessionRecord.getOpenSession()).toBeDefined()
         })
 
-        // it('the session can encrypt', function (done) {
-        //     aliceSessionCipher
-        //         .encrypt(originalMessage)
-        //         .then(function (ciphertext) {
-        //             assert.strictEqual(ciphertext.type, 3) // PREKEY_BUNDLE
+        it('the session can encrypt', function (done) {
+            aliceSessionCipher
+                .encrypt(originalMessage!)
+                .then(function (ciphertext) {
+                    expect(ciphertext.type).toBe(3) // PREKEY_BUNDLE
 
-        //             return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
-        //         })
-        //         .then(function (plaintext) {
-        //             assertEqualArrayBuffers(plaintext, originalMessage)
-        //         })
-        //         .then(done, done)
-        // })
+                    // return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
+                })
+                .then(function (plaintext) {
+                    // assertEqualArrayBuffers(plaintext, originalMessage)
+                })
+                .then(done, done)
+        })
 
         // it('the session can decrypt', function (done) {
         //     bobSessionCipher
