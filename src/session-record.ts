@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import ByteBuffer from 'bytebuffer'
 import * as util from './helpers'
 import { Stringable } from './types'
@@ -18,7 +19,10 @@ export class SessionRecord {
         }
 
         const record = new SessionRecord()
-        record.sessions = data.sessions
+        record.sessions = {}
+        for (const k of Object.keys(data.sessions)) {
+            record.sessions[k] = this.destringSession(data.sessions[k])
+        }
         if (
             record.sessions === undefined ||
             record.sessions === null ||
@@ -28,6 +32,18 @@ export class SessionRecord {
             throw new Error('Error deserializing SessionRecord')
         }
         return record
+    }
+
+    static destringSession(jsonsession: SessionType): SessionType {
+        const session = { ...jsonsession }
+        if (jsonsession.currentRatchet.ephemeralKeyPair) {
+            session.currentRatchet.ephemeralKeyPair = {
+                pubKey: util.toArrayBuffer(jsonsession.currentRatchet.ephemeralKeyPair.pubKey)!,
+                privKey: util.toArrayBuffer(jsonsession.currentRatchet.ephemeralKeyPair.privKey)!,
+            }
+        }
+
+        return session
     }
 
     serialize(): string {
