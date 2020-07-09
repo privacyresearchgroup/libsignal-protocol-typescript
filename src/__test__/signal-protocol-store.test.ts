@@ -148,26 +148,25 @@ test('removeSignedPreKey deletes signed prekeys', async () => {
 
 const testRecord = 'an opaque string'
 
-test('stores sessions encoded as array buffers', async () => {
-    const testRecord = new Uint8Array([1, 2, 3]).buffer
+// TODO: this used to store essions encoded as array buffers, but the SDK
+// always stores them as strings. Changed the tests accordingly
+test('stores sessions ', async () => {
     await store.storeSession(address.toString(), testRecord)
     const record = await store.loadSession(address.toString())
     expect(record).toBeDefined()
     if (record) {
-        assertEqualArrayBuffers(testRecord, record)
+        expect(testRecord).toStrictEqual(record)
     }
 })
 
 test('loadSession returns sessions that exist', async () => {
     const address = new SignalProtocolAddress(number, 1)
     const testRecord = 'an opaque string'
-    const enc = new TextEncoder()
-    await store.storeSession(address.toString(), enc.encode(testRecord).buffer)
+    // const enc = new TextEncoder()
+    await store.storeSession(address.toString(), testRecord)
     const record = await store.loadSession(address.toString())
     expect(record).toBeDefined()
-    if (record) {
-        assertEqualArrayBuffers(record, enc.encode(testRecord).buffer)
-    }
+    expect(record).toStrictEqual(testRecord)
 })
 
 test('returns undefined for sessions that do not exist', async () => {
@@ -178,8 +177,8 @@ test('returns undefined for sessions that do not exist', async () => {
 
 test('removeSession deletes sessions', async () => {
     const address = new SignalProtocolAddress(number, 1)
-    const enc = new TextEncoder()
-    await store.storeSession(address.toString(), enc.encode(testRecord).buffer)
+    // const enc = new TextEncoder()
+    await store.storeSession(address.toString(), testRecord)
     await store.removeSession(address.toString())
     const record = await store.loadSession(address.toString())
     expect(record).toBeUndefined()
@@ -191,9 +190,9 @@ test('removeAllSessions removes all sessions for a number', async () => {
         return address.toString()
     })
     await devices.forEach(function (encodedNumber) {
-        const enc = new TextEncoder()
+        // const enc = new TextEncoder()
 
-        store.storeSession(encodedNumber, enc.encode(testRecord + encodedNumber).buffer)
+        store.storeSession(encodedNumber, testRecord + encodedNumber)
     })
     await store.removeAllSessions(number)
     const records = await Promise.all(devices.map(store.loadSession.bind(store)))
