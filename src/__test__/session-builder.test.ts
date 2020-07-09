@@ -59,26 +59,19 @@ test('basic prekey v3: the session can decrypt', async () => {
     assertEqualArrayBuffers(plaintext, originalMessage)
 })
 */
-/*
+
 test('basic prekey v3: accepts a new preKey with the same identity', async () => {
     await prep
-
-    generatePreKeyBundle(bobStore, bobPreKeyId + 1, bobSignedKeyId + 1)
-        .then(function (preKeyBundle) {
-            const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
-            return builder.processPreKey(preKeyBundle).then(function () {
-                return aliceStore.loadSession(BOB_ADDRESS.toString()).then(function (record) {
-                    assert.isDefined(record)
-                    const sessionRecord = SessionRecord.deserialize(record)
-                    assert.isTrue(sessionRecord.haveOpenSession())
-                    assert.isDefined(sessionRecord.getOpenSession())
-                    done()
-                })
-            })
-        })
-        .catch(done)
+    const preKeyBundle = await generatePreKeyBundle(bobStore, bobPreKeyId + 1, bobSignedKeyId + 1)
+    const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
+    await builder.processPreKey(preKeyBundle)
+    const record = await aliceStore.loadSession(BOB_ADDRESS.toString())
+    expect(record).toBeDefined()
+    const sessionRecord = SessionRecord.deserialize(record)
+    expect(sessionRecord.haveOpenSession()).toBeTruthy()
+    expect(sessionRecord.getOpenSession()).toBeDefined()
 })
-*/
+
 /*
 test('basic prekey v3: rejects untrusted identity keys', async () => {
      await prep
