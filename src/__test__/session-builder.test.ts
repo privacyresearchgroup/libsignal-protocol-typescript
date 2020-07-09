@@ -1,11 +1,11 @@
 import { SessionBuilder } from '../session-builder'
-//TODO import { SessionCipher } from '../session-cipher'
+//SESSIONCIPHER import { SessionCipher } from '../session-cipher'
 import { SessionRecord } from '../session-record'
 
 import { SignalProtocolAddress } from '../signal-protocol-address'
 import { SignalProtocolStore } from './storage-type'
 
-import { generateIdentity, generatePreKeyBundle } from '../__test-utils__/utils'
+import { generateIdentity, generatePreKeyBundle, assertEqualArrayBuffers } from '../__test-utils__/utils'
 import * as utils from '../helpers'
 
 const ALICE_ADDRESS = new SignalProtocolAddress('+14151111111', 1)
@@ -27,51 +27,41 @@ const prep = Promise.all([generateIdentity(aliceStore), generateIdentity(bobStor
     })
 //--
 
-const originalMessage = utils.toArrayBuffer("L'homme est condamné à être libre")
-//TODO const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
-//TODO const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
+const originalMessage = <ArrayBuffer>utils.toArrayBuffer("L'homme est condamné à être libre")
+//SESSIONCIPHER const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
+//SESSIONCIPHER const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
 test('basic prekey v3: creates a session', async () => {
     await prep
     const record = await aliceStore.loadSession(BOB_ADDRESS.toString())
     expect(record).toBeDefined()
-    const sessionRecord = SessionRecord.deserialize(record)
+    const sessionRecord = await SessionRecord.deserialize(record)
     expect(sessionRecord.haveOpenSession()).toBeTruthy()
     expect(sessionRecord.getOpenSession()).toBeDefined()
 })
+
+/*SESSIONCIPHER
+test('basic prekey v3: the session can encrypt', async () => {
+    await prep
+
+    const ciphertext = await aliceSessionCipher.encrypt(originalMessage)
+    expect(ciphertext.type).toBe(3) // PREKEY_BUNDLE
+    const plaintext = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
+    assertEqualArrayBuffers(plaintext, originalMessage) // assertEqualArrayBuffers(plaintext, originalMessage)
+})
+*/
+
+/*SESSIONCIPHER
+test('basic prekey v3: the session can decrypt', async () => {
+    await prep
+    const ciphertext = await bobSessionCipher.encrypt(originalMessage)
+    const plaintext = await aliceSessionCipher.decryptWhisperMessage(ciphertext.body, 'binary')
+    assertEqualArrayBuffers(plaintext, originalMessage)
+})
+*/
 /*
-test('basic prekey v3: the session can encrypt', function (done) {
-        await prep
-
-    aliceSessionCipher
-        .encrypt(originalMessage)
-        .then(function (ciphertext) {
-            assert.strictEqual(ciphertext.type, 3) // PREKEY_BUNDLE
-
-            return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
-        })
-        .then(function (plaintext) {
-            assertEqualArrayBuffers(plaintext, originalMessage)
-        })
-        .then(done, done)
-})
-
-test('basic prekey v3: the session can decrypt', function (done) {
-       await prep
-
-    bobSessionCipher
-        .encrypt(originalMessage)
-        .then(function (ciphertext) {
-            return aliceSessionCipher.decryptWhisperMessage(ciphertext.body, 'binary')
-        })
-        .then(function (plaintext) {
-            assertEqualArrayBuffers(plaintext, originalMessage)
-        })
-        .then(done, done)
-})
-
-test('basic prekey v3: accepts a new preKey with the same identity', function (done) {
-      await prep
+test('basic prekey v3: accepts a new preKey with the same identity', async () => {
+    await prep
 
     generatePreKeyBundle(bobStore, bobPreKeyId + 1, bobSignedKeyId + 1)
         .then(function (preKeyBundle) {
@@ -88,8 +78,9 @@ test('basic prekey v3: accepts a new preKey with the same identity', function (d
         })
         .catch(done)
 })
-
-test('basic prekey v3: rejects untrusted identity keys', function (done) {
+*/
+/*
+test('basic prekey v3: rejects untrusted identity keys', async () => {
      await prep
 
     KeyHelper.generateIdentityKeyPair().then(function (newIdentity) {
@@ -141,7 +132,7 @@ before(function (done) {
 // const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
 // const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
-test('basic v3 NO PREKEY: creates a session', function (done) {
+test('basic v3 NO PREKEY: creates a session', async () => {
        await prep
 
     return aliceStore
@@ -155,7 +146,7 @@ test('basic v3 NO PREKEY: creates a session', function (done) {
         .then(done, done)
 })
 
-test('basic v3 NO PREKEY: the session can encrypt', function (done) {
+test('basic v3 NO PREKEY: the session can encrypt', async () => {
        await prep
 
     aliceSessionCipher
@@ -171,7 +162,7 @@ test('basic v3 NO PREKEY: the session can encrypt', function (done) {
         .then(done, done)
 })
 
-test('basic v3 NO PREKEY: the session can decrypt', function (done) {
+test('basic v3 NO PREKEY: the session can decrypt',async () => {
        await prep
 
     bobSessionCipher
@@ -185,7 +176,7 @@ test('basic v3 NO PREKEY: the session can decrypt', function (done) {
         .then(done, done)
 })
 
-test('basic v3 NO PREKEY: accepts a new preKey with the same identity', function (done) {
+test('basic v3 NO PREKEY: accepts a new preKey with the same identity', async () => {
      await prep
 
     generatePreKeyBundle(bobStore, bobPreKeyId + 1, bobSignedKeyId + 1)
@@ -205,7 +196,7 @@ test('basic v3 NO PREKEY: accepts a new preKey with the same identity', function
         .catch(done)
 })
 
-test('basic v3 NO PREKEY: rejects untrusted identity keys', function (done) {
+test('basic v3 NO PREKEY: rejects untrusted identity keys', async () => {
       await prep
 
     KeyHelper.generateIdentityKeyPair().then(function (newIdentity) {
