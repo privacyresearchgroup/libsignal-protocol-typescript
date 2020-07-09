@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SignalProtocolAddress } from '../signal-protocol-address'
 import ByteBuffer from 'bytebuffer'
-import { isKeyPairType, StorageType } from '../types'
+import { isKeyPairType, StorageType, Direction, SessionRecordType } from '../types'
 
 interface KeyPairType {
     pubKey: ArrayBuffer
@@ -12,7 +12,6 @@ interface PreKeyType {
     keyId: number
     keyPair: KeyPairType
 }
-type SessionRecordType = ArrayBuffer
 interface SignedPreKeyType extends PreKeyType {
     signature: ArrayBuffer
 }
@@ -37,10 +36,6 @@ type StoreValue = KeyPairType | Stringable // number | KeyPairType | PreKeyType 
 
 export class SignalProtocolStore implements StorageType {
     private _store: Record<string, StoreValue>
-    Direction = {
-        SENDING: 1,
-        RECEIVING: 2,
-    }
 
     constructor() {
         this._store = {}
@@ -80,7 +75,12 @@ export class SignalProtocolStore implements StorageType {
         }
         throw new Error('Stored Registration ID is not a number')
     }
-    isTrustedIdentity(identifier: string, identityKey: ArrayBuffer): Promise<boolean> {
+    isTrustedIdentity(
+        identifier: string,
+        identityKey: ArrayBuffer,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _direction?: Direction
+    ): Promise<boolean> {
         if (identifier === null || identifier === undefined) {
             throw new Error('tried to check identity key for undefined/null key')
         }
@@ -92,7 +92,7 @@ export class SignalProtocolStore implements StorageType {
         }
         return Promise.resolve(toString(identityKey) === toString(trusted as Stringable))
     }
-    async loadPreKey(keyId: string): Promise<KeyPairType | undefined> {
+    async loadPreKey(keyId: number | string): Promise<KeyPairType | undefined> {
         let res = this.get('25519KeypreKey' + keyId, undefined)
         if (isKeyPairType(res)) {
             res = { pubKey: res.pubKey, privKey: res.privKey }
@@ -104,8 +104,9 @@ export class SignalProtocolStore implements StorageType {
     }
     async loadSession(identifier: string): Promise<SessionRecordType | undefined> {
         const rec = this.get('session' + identifier, undefined)
-        if (isArrayBuffer(rec)) {
-            return rec as ArrayBuffer
+        console.log(`loadSession`, { identifier, rec, store: this._store })
+        if (typeof rec === 'string') {
+            return rec as string
         } else if (typeof rec === 'undefined') {
             return rec
         }
@@ -123,7 +124,7 @@ export class SignalProtocolStore implements StorageType {
         }
         throw new Error(`stored key has wrong type`)
     }
-    async removePreKey(keyId: number): Promise<void> {
+    async removePreKey(keyId: number | string): Promise<void> {
         //    removePreKey: function(keyId) {
         this.remove('25519KeypreKey' + keyId)
     }

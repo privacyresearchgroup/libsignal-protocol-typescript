@@ -21,15 +21,25 @@ export interface KeyPairType {
     privKey: ArrayBuffer
 }
 
-export interface PreKeyType {
+export interface PreKeyPairType {
     keyId: number
     keyPair: KeyPairType
 }
 
-export interface SignedPreKeyType extends PreKeyType {
+export interface SignedPreKeyPairType extends PreKeyPairType {
     signature: ArrayBuffer
 }
 
+export interface PreKeyType {
+    keyId: number
+    publicKey: ArrayBuffer
+}
+
+export interface SignedPublicPreKeyType extends PreKeyType {
+    signature: ArrayBuffer
+}
+
+// TODO: Make this match reality
 export interface RecordType {
     archiveCurrentState: () => void
     deleteAllSessions: () => void
@@ -44,29 +54,26 @@ export interface RecordType {
 
 // TODO: any????
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SessionRecordType = ArrayBuffer
+export type SessionRecordType = string
 
 export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
-type StoreValue = KeyPairType | Stringable
 
+export enum Direction {
+    SENDING = 1,
+    RECEIVING = 2,
+}
 export interface StorageType {
-    Direction: {
-        SENDING: number
-        RECEIVING: number
-    }
     getIdentityKeyPair: () => Promise<KeyPairType | undefined>
     getLocalRegistrationId: () => Promise<number | undefined>
-    isTrustedIdentity: (identifier: string, identityKey: ArrayBuffer) => Promise<boolean>
-    loadPreKey: (
-        encodedAddress: string,
-        publicKey: ArrayBuffer | undefined,
-        direction: number
-    ) => Promise<KeyPairType | undefined>
+
+    // TODO: direction is unused in test code but probably should be required
+    isTrustedIdentity: (identifier: string, identityKey: ArrayBuffer, direction?: Direction) => Promise<boolean>
+    loadPreKey: (encodedAddress: string | number) => Promise<KeyPairType | undefined>
     loadSession: (encodedAddress: string) => Promise<SessionRecordType | undefined>
 
     // TODO: should this really return a signed prekey?
     loadSignedPreKey: (keyId: number) => Promise<KeyPairType | undefined>
-    removePreKey: (keyId: number) => Promise<void>
+    removePreKey: (keyId: number | string) => Promise<void>
     saveIdentity: (encodedAddress: string, publicKey: ArrayBuffer, nonblockingApproval?: boolean) => Promise<boolean>
     storeSession: (encodedAddress: string, record: SessionRecordType) => Promise<void>
 }
@@ -94,10 +101,10 @@ export function isKeyPairType(kp: any): kp is KeyPairType {
     return !!(kp?.privKey && kp?.pubKey)
 }
 
-export function isPreKeyType(pk: any): pk is PreKeyType {
+export function isPreKeyType(pk: any): pk is PreKeyPairType {
     return typeof pk?.keyId === 'number' && isKeyPairType(pk?.keyPair)
 }
 
-export function isSignedPReKeyType(spk: any): spk is SignedPreKeyType {
+export function isSignedPReKeyType(spk: any): spk is SignedPreKeyPairType {
     return spk?.signature && isPreKeyType(spk)
 }
