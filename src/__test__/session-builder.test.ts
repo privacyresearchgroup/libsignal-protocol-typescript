@@ -93,39 +93,6 @@ test('basic prekey v3: rejects untrusted identity keys', async () => {
     }).toThrow('Identity key changed')
 })
 
-//})
-/*
-//describe('basic v3 NO PREKEY', function () {
-//    const aliceStore = new SignalProtocolStore()
-
-//   const bobStore = new SignalProtocolStore()
-//   const bobPreKeyId = 1337
-//   const bobSignedKeyId = 1
-
-//    const Curve = libsignal.Curve
-
-before(function (done) {
-     await prep
-
-    Promise.all([generateIdentity(aliceStore), generateIdentity(bobStore)])
-        .then(function () {
-            return generatePreKeyBundle(bobStore, bobPreKeyId, bobSignedKeyId)
-        })
-        .then(function (preKeyBundle) {
-            delete preKeyBundle.preKey
-            const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
-            return builder.processPreKey(preKeyBundle).then(function () {
-                done()
-            })
-        })
-        .catch(done)
-})
-
-// const originalMessage = util.toArrayBuffer("L'homme est condamné à être libre")
-// const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
-// const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
-*/
-
 test('basic v3 NO PREKEY: creates a session', async () => {
     await prep
     const record = await aliceStore.loadSession(BOB_ADDRESS.toString())
