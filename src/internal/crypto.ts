@@ -1,4 +1,5 @@
 import * as Internal from '.'
+import * as util from '../helpers'
 import { KeyPairType } from '../types'
 import msrcrypto from 'msrcrypto'
 
@@ -84,3 +85,17 @@ export class Crypto {
 }
 
 export const crypto = new Crypto()
+
+// HKDF for TextSecure has a bit of additional handling - salts always end up being 32 bytes
+export function HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: unknown): Promise<ArrayBuffer[]> {
+    if (salt.byteLength != 32) {
+        throw new Error('Got salt of incorrect length')
+    }
+
+    const abInfo = util.toArrayBuffer(info)
+    if (!abInfo) {
+        throw new Error(`Invalid HKDF info`)
+    }
+
+    return crypto.HKDF(input, salt, abInfo)
+}
