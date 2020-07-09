@@ -53,7 +53,7 @@ export class SessionBuilder {
             device.registrationId
         )
         session.pendingPreKey = {
-            signedKeyId: '' + device.signedPreKey.keyId,
+            signedKeyId: device.signedPreKey.keyId,
             baseKey: baseKey.pubKey,
         }
         if (device.preKey) {
@@ -170,6 +170,10 @@ export class SessionBuilder {
             session.indexInfo.baseKeyType = BaseKeyType.OURS
             const ourSendingEphemeralKey = await Internal.crypto.createKeyPair()
             session.currentRatchet.ephemeralKeyPair = ourSendingEphemeralKey
+            console.log(`initiating session`, {
+                ourSendingEphemeralKey,
+                typeofkey: typeof ourSendingEphemeralKey.pubKey,
+            })
             await this.calculateSendingRatchet(session, theirSignedPubKey)
         } else {
             session.indexInfo.baseKey = theirEphemeralPubKey
@@ -182,7 +186,7 @@ export class SessionBuilder {
     async calculateSendingRatchet(session: SessionType, remoteKey: ArrayBuffer): Promise<void> {
         const ratchet = session.currentRatchet
         if (!ratchet.ephemeralKeyPair) {
-            throw new Error(`Invalid ratchet - ephemeratl key pair is missing`)
+            throw new Error(`Invalid ratchet - ephemeral key pair is missing`)
         }
 
         const ephPrivKey = util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey)
