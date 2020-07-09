@@ -16,7 +16,7 @@ export function assertEqualArrayBuffers(ab1: ArrayBuffer, ab2: ArrayBuffer): voi
     }
 }
 
-export function generateIdentity(store) {
+export async function generateIdentity(store) {
     return Promise.all([KeyHelper.generateIdentityKeyPair(), KeyHelper.generateRegistrationId()]).then(function (
         result
     ) {
@@ -25,7 +25,7 @@ export function generateIdentity(store) {
     })
 }
 
-export function generatePreKeyBundle(store, preKeyId, signedPreKeyId) {
+export async function generatePreKeyBundle(store, preKeyId, signedPreKeyId) {
     return Promise.all([store.getIdentityKeyPair(), store.getLocalRegistrationId()]).then(function (result) {
         const identity = result[0]
         const registrationId = result[1]
