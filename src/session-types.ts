@@ -44,13 +44,14 @@ export interface OldRatchetInfo {
 
 export interface Chain {
     chainType: ChainType
-    chainKey: any
+    chainKey: { key: ArrayBuffer; counter: number }
+    messageKeys: ArrayBuffer[]
 }
 
 export interface PendingPreKey {
     baseKey: ArrayBuffer
-    preKeyId?: string | number
-    signedKeyId: string
+    preKeyId?: number
+    signedKeyId: number
 }
 
 export enum EncryptionResultMessageType {
