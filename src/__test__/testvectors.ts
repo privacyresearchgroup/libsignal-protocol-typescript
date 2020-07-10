@@ -214,7 +214,7 @@ export function TestVectors(): Array<Record<string, any>> {
     // Now change the order and make 5 tests out of them:
     tests[tests.length] = { name: 'Standard Signal Protocol Test Vectors as Bob', vectors: TwoPartyTestVectorsBob }
 
-    var TwoPartyTestVectorsBobCopy = function () {
+    const TwoPartyTestVectorsBobCopy = function () {
         const orig = TwoPartyTestVectorsBob
         let v: testType[] = []
         for (let i = 0; i < TwoPartyTestVectorsBob.length; i++) {
@@ -227,8 +227,8 @@ export function TestVectors(): Array<Record<string, any>> {
 
     tests[tests.length] = (function () {
         // Copy TwoPartyTestVectorsBob into v
-        var v = TwoPartyTestVectorsBobCopy()
-        var orig = TwoPartyTestVectorsBob
+        const v = TwoPartyTestVectorsBobCopy()
+        const orig = TwoPartyTestVectorsBob
 
         // Swap first and second received prekey messages
         v[0][1] = { message: orig[1][1].message, type: orig[1][1].type, expectedSmsText: orig[1][1].expectedSmsText }
@@ -246,8 +246,8 @@ export function TestVectors(): Array<Record<string, any>> {
 
     tests[tests.length] = (function () {
         // Copy TwoPartyTestVectorsBob into v
-        var v = TwoPartyTestVectorsBobCopy()
-        var orig = TwoPartyTestVectorsBob
+        const v = TwoPartyTestVectorsBobCopy()
+        const orig = TwoPartyTestVectorsBob
 
         // Swap second received prekey msg with the first send
         v[1] = orig[2]
@@ -258,8 +258,8 @@ export function TestVectors(): Array<Record<string, any>> {
 
     tests[tests.length] = (function () {
         // Copy TwoPartyTestVectorsBob into v
-        var v = TwoPartyTestVectorsBobCopy()
-        var orig = TwoPartyTestVectorsBob
+        const v = TwoPartyTestVectorsBobCopy()
+        const orig = TwoPartyTestVectorsBob
 
         // Move second received prekey msg to the end (incl after the first received message in the second chain)
         v[4] = orig[1]
@@ -272,8 +272,8 @@ export function TestVectors(): Array<Record<string, any>> {
 
     tests[tests.length] = (function () {
         // Copy TwoPartyTestVectorsBob into v
-        var v = TwoPartyTestVectorsBobCopy()
-        var orig = TwoPartyTestVectorsBob
+        const v = TwoPartyTestVectorsBobCopy()
+        const orig = TwoPartyTestVectorsBob
 
         // Move first received prekey msg to the end (incl after the first received message in the second chain)
         // ... by first swapping first and second received prekey msg
@@ -376,7 +376,7 @@ export function TestVectors(): Array<Record<string, any>> {
     // Now shuffle them around and make 6 tests
     tests[tests.length] = { name: 'Signal Protocol End Session Test Vectors as Bob', vectors: EndSessionTestVectorsBob }
 
-    var EndSessionTestVectorsBobCopy = function () {
+    const EndSessionTestVectorsBobCopy = function () {
         const orig = EndSessionTestVectorsBob
         let v: testType[] = []
         for (let i = 0; i < EndSessionTestVectorsBob.length; i++) {
@@ -419,7 +419,7 @@ export function TestVectors(): Array<Record<string, any>> {
         const orig = EndSessionTestVectorsBob
 
         // Swap message 3 and 4, starting a new session before closing the last
-        var tmp = v[3][1]
+        const tmp = v[3][1]
         v[3][1] = v[2][1]
         v[2][1] = tmp
 
@@ -432,12 +432,12 @@ export function TestVectors(): Array<Record<string, any>> {
         const orig = EndSessionTestVectorsBob
 
         // Swap message 3 and 4, starting a new session before closing the last
-        var tmp = v[3][1]
+        let tmp = v[3][1]
         v[3][1] = v[2][1]
         v[2][1] = tmp
 
         // Swap message 4 and 5, continuing the new session before closing the last
-        var tmp = v[4][1]
+        tmp = v[4][1]
         v[4][1] = v[3][1]
         v[3][1] = tmp
 
@@ -455,7 +455,7 @@ export function TestVectors(): Array<Record<string, any>> {
         const orig = EndSessionTestVectorsBob
 
         // Put the end session message before all the cooresponding messages
-        var tmp = v[0][1]
+        const tmp = v[0][1]
         v[0][1] = {
             message: orig[2][1].message,
             type: orig[2][1].type,
@@ -503,7 +503,7 @@ export function TestVectors(): Array<Record<string, any>> {
     })()
 
     // Nearly same as above except as Alice
-    var EndSessionTestVectorsAlice = [
+    const EndSessionTestVectorsAlice = [
         [
             'sendMessage',
             {
