@@ -31,8 +31,8 @@ export function isEqual(a: ArrayBuffer | undefined, b: ArrayBuffer | undefined):
     if (a === undefined || b === undefined) {
         return false
     }
-    const a1: String = <String>toString(a)
-    const b1: String = <String>toString(b)
+    const a1: String = toString(a)
+    const b1: String = toString(b)
     var maxLength = Math.max(a1.length, b1.length)
     if (maxLength < 5) {
         throw new Error('a/b compare too short')
