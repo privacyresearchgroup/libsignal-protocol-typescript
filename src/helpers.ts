@@ -1,12 +1,16 @@
 import ByteBuffer from 'bytebuffer'
 export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
-export function toString(thing: Stringable): string | undefined {
+export function toString(thing: Stringable): string {
     if (typeof thing == 'string') {
         return thing
     } else if (typeof thing === 'number') {
         return `${thing}`
     }
-    return thing && ByteBuffer.wrap(thing).toString('binary')
+    //return thing && ByteBuffer.wrap(thing).toString('binary')
+    if (!thing) {
+        throw new Error('cant string undef')
+    }
+    return ByteBuffer.wrap(thing).toString('binary')
 }
 export function toArrayBuffer(thing: unknown): ArrayBuffer | undefined {
     if (thing === undefined) {
