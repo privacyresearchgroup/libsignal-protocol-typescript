@@ -22,3 +22,16 @@ export function toArrayBuffer(thing: unknown): ArrayBuffer | undefined {
     }
     return ByteBuffer.wrap(thing, 'binary').toArrayBuffer()
 }
+export function isEqual(a: ArrayBuffer | undefined, b: ArrayBuffer | undefined): Boolean {
+    // TODO: Special-case arraybuffers, etc
+    if (a === undefined || b === undefined) {
+        return false
+    }
+    const a1: String = <String>toString(a)
+    const b1: String = <String>toString(b)
+    var maxLength = Math.max(a1.length, b1.length)
+    if (maxLength < 5) {
+        throw new Error('a/b compare too short')
+    }
+    return a1.substring(0, Math.min(maxLength, a1.length)) == b1.substring(0, Math.min(maxLength, b1.length))
+}
