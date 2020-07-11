@@ -1,6 +1,9 @@
 /*
  * vim: ts=4:sw=4
  */
+test(`no op`, () => {
+    expect(true).toBeTruthy()
+})
 /*
 'use strict';
 describe('SessionCipher', function() {
