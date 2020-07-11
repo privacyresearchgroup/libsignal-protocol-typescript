@@ -99,3 +99,23 @@ export function HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: unknown): Prom
 
     return crypto.HKDF(input, salt, abInfo)
 }
+
+export async function verifyMAC(data: ArrayBuffer, key: ArrayBuffer, mac: ArrayBuffer, length: number): Promise<void> {
+    const calculated_mac = await crypto.sign(key, data)
+    if (mac.byteLength != length || calculated_mac.byteLength < length) {
+        throw new Error('Bad MAC length')
+    }
+    const a = new Uint8Array(calculated_mac)
+    const b = new Uint8Array(mac)
+    let result = 0
+    for (let i = 0; i < mac.byteLength; ++i) {
+        result = result | (a[i] ^ b[i])
+    }
+    if (result !== 0) {
+        throw new Error('Bad MAC')
+    }
+}
+
+export function calculateMAC(key: ArrayBuffer, data: ArrayBuffer): Promise<ArrayBuffer> {
+    return crypto.sign(key, data)
+}
