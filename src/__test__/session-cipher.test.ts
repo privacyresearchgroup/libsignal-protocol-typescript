@@ -90,7 +90,6 @@ async function setupReceiveStep(
         privKeyQueue.push(data.newEphemeralKey)
     }
 
-
     if (data.ourIdentityKey === undefined) {
         return Promise.resolve()
     }
@@ -241,7 +240,7 @@ async function doSendStep(
         //        const expected = Internal.protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
         //const expected = protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
         const msg = protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1))
-        const expected = protobuf.WhisperMessage.encode(msg).finish()
+        const expected = protobuf.PreKeyWhisperMessage.encode(msg).finish()
 
         if (!utils.isEqual(expected, msg.body.substring(1))) {
             throw new Error('Result does not match expected ciphertext')
