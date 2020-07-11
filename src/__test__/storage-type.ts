@@ -104,7 +104,7 @@ export class SignalProtocolStore implements StorageType {
     }
     async loadSession(identifier: string): Promise<SessionRecordType | undefined> {
         const rec = this.get('session' + identifier, undefined)
-        console.log(`loadSession`, { identifier, rec, store: this._store })
+        // console.log(`loadSession`, { identifier, rec, store: this._store })
         if (typeof rec === 'string') {
             return rec as string
         } else if (typeof rec === 'undefined') {
