@@ -259,6 +259,71 @@ export class SessionCipher {
 
         return SessionLock.queueJobForNumber(address, job)
     }
+    async decryptWithSessionList(
+        buffer: ArrayBuffer,
+        sessionList: SessionType[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        errors: any[]
+    ): Promise<{ plaintext: ArrayBuffer; session: SessionType }> {
+        // Iterate recursively through the list, attempting to decrypt
+        // using each one at a time. Stop and return the result if we get
+        // a valid result
+        if (sessionList.length === 0) {
+            return Promise.reject(errors[0])
+        }
+
+        const session = sessionList.pop()
+        if (!session) {
+            return Promise.reject(errors[0])
+        }
+        try {
+            const plaintext = await this.doDecryptWhisperMessage(buffer, session)
+
+            return { plaintext: plaintext, session: session }
+        } catch (e) {
+            if (e.name === 'MessageCounterError') {
+                return Promise.reject(e)
+            }
+
+            errors.push(e)
+            return this.decryptWithSessionList(buffer, sessionList, errors)
+        }
+    }
+
+    decryptWhisperMessage(buff: string, encoding: string): Promise<ArrayBuffer> {
+        // TODO get rid of ByteBuffer
+        const buffer = ByteBuffer.wrap(buff, encoding).toArrayBuffer()
+        const address = this.remoteAddress.toString()
+        const job = async () => {
+            const record = await this.getRecord(address)
+            if (!record) {
+                throw new Error('No record for device ' + address)
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const errors: any[] = []
+            const result = await this.decryptWithSessionList(buffer, record.getSessions(), errors)
+            if (result.session.indexInfo.baseKey !== record.getOpenSession()?.indexInfo.baseKey) {
+                record.archiveCurrentState()
+                record.promoteState(result.session)
+            }
+
+            const trusted = await this.storage.isTrustedIdentity(
+                this.remoteAddress.getName(),
+                result.session.indexInfo.remoteIdentityKey,
+                Direction.RECEIVING
+            )
+            if (!trusted) {
+                throw new Error('Identity key changed')
+            }
+
+            await this.storage.saveIdentity(address, result.session.indexInfo.remoteIdentityKey)
+            record.updateSessionState(result.session)
+            await this.storage.storeSession(address, record.serialize())
+
+            return result.plaintext
+        }
+        return SessionLock.queueJobForNumber(address, job)
+    }
 
     async doDecryptWhisperMessage(messageBytes: ArrayBuffer, session: SessionType): Promise<ArrayBuffer> {
         const version = new Uint8Array(messageBytes)[0]
@@ -417,104 +482,7 @@ export class SessionCipher {
 
 /*
 
-  SessionCipher.prototype = {
-
-    ,
-    decryptWithSessionList: function(buffer, sessionList, errors) {
-      // Iterate recursively through the list, attempting to decrypt
-      // using each one at a time. Stop and return the result if we get
-      // a valid result
-      if (sessionList.length === 0) {
-          return Promise.reject(errors[0]);
-      }
-
-      var session = sessionList.pop();
-      return this.doDecryptWhisperMessage(buffer, session).then(function(plaintext) {
-          return { plaintext: plaintext, session: session };
-      }).catch(function(e) {
-          if (e.name === 'MessageCounterError') {
-              return Promise.reject(e);
-          }
-
-          errors.push(e);
-          return this.decryptWithSessionList(buffer, sessionList, errors);
-      }.bind(this));
-    },
-    decryptWhisperMessage: function(buffer, encoding) {
-        buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding).toArrayBuffer();
-        return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-          var address = this.remoteAddress.toString();
-          return this.getRecord(address).then(function(record) {
-              if (!record) {
-                  throw new Error("No record for device " + address);
-              }
-              var errors = [];
-              return this.decryptWithSessionList(buffer, record.getSessions(), errors).then(function(result) {
-                  return this.getRecord(address).then(function(record) {
-                      if (result.session.indexInfo.baseKey !== record.getOpenSession().indexInfo.baseKey) {
-                        record.archiveCurrentState();
-                        record.promoteState(result.session);
-                      }
-
-                      return this.storage.isTrustedIdentity(
-                          this.remoteAddress.getName(), util.toArrayBuffer(result.session.indexInfo.remoteIdentityKey), this.storage.Direction.RECEIVING
-                      ).then(function(trusted) {
-                          if (!trusted) {
-                              throw new Error('Identity key changed');
-                          }
-                      }).then(function() {
-                          return this.storage.saveIdentity(this.remoteAddress.toString(), result.session.indexInfo.remoteIdentityKey);
-                      }.bind(this)).then(function() {
-                          record.updateSessionState(result.session);
-                          return this.storage.storeSession(address, record.serialize()).then(function() {
-                              return result.plaintext;
-                          });
-                      }.bind(this));
-                  }.bind(this));
-              }.bind(this));
-          }.bind(this));
-        }.bind(this));
-    },
-    decryptPreKeyWhisperMessage: function(buffer, encoding) {
-        buffer = dcodeIO.ByteBuffer.wrap(buffer, encoding);
-        var version = buffer.readUint8();
-        if ((version & 0xF) > 3 || (version >> 4) < 3) {  // min version > 3 or max version < 3
-            throw new Error("Incompatible version number on PreKeyWhisperMessage");
-        }
-        return Internal.SessionLock.queueJobForNumber(this.remoteAddress.toString(), function() {
-            var address = this.remoteAddress.toString();
-            return this.getRecord(address).then(function(record) {
-                var preKeyProto = Internal.protobuf.PreKeyWhisperMessage.decode(buffer);
-                if (!record) {
-                    if (preKeyProto.registrationId === undefined) {
-                        throw new Error("No registrationId");
-                    }
-                    record = new Internal.SessionRecord(
-                        preKeyProto.registrationId
-                    );
-                }
-                var builder = new SessionBuilder(this.storage, this.remoteAddress);
-                // isTrustedIdentity is called within processV3, no need to call it here
-                return builder.processV3(record, preKeyProto).then(function(preKeyId) {
-                    var session = record.getSessionByBaseKey(preKeyProto.baseKey);
-                    return this.doDecryptWhisperMessage(
-                        preKeyProto.message.toArrayBuffer(), session
-                    ).then(function(plaintext) {
-                        record.updateSessionState(session);
-                        return this.storage.storeSession(address, record.serialize()).then(function() {
-                            if (preKeyId !== undefined && preKeyId !== null) {
-                                return this.storage.removePreKey(preKeyId);
-                            }
-                        }.bind(this)).then(function() {
-                            return plaintext;
-                        });
-                    }.bind(this));
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
-    },
-   
-  };
+  S
 
   libsignal.SessionCipher = function(storage, remoteAddress) {
       var cipher = new SessionCipher(storage, remoteAddress);
