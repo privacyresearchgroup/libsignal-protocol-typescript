@@ -5,6 +5,7 @@ import * as Internal from './internal'
 import * as util from './helpers'
 import { SessionRecord } from './session-record'
 import { PreKeyWhisperMessage } from '@privacyresearch/libsignal-protocol-protobuf-ts/lib/protos/WhisperTextProtocol'
+import { SessionLock } from './session-lock'
 
 export class SessionBuilder {
     remoteAddress: SignalProtocolAddressType
@@ -16,7 +17,6 @@ export class SessionBuilder {
     }
 
     processPreKeyJob = async (device: DeviceType): Promise<SessionType> => {
-        console.log(`running preKey job`)
         const trusted = await this.storage.isTrustedIdentity(
             this.remoteAddress.name,
             device.identityKey,
@@ -80,8 +80,8 @@ export class SessionBuilder {
 
     initSession = async (
         isInitiator: boolean,
-        ourEphemeralKey: KeyPairType,
-        ourSignedKey: KeyPairType | undefined,
+        ourEphemeralKey: KeyPairType<ArrayBuffer>,
+        ourSignedKey: KeyPairType<ArrayBuffer> | undefined,
         theirIdentityPubKey: ArrayBuffer,
         theirEphemeralPubKey: ArrayBuffer,
         theirSignedPubKey: ArrayBuffer | undefined,
@@ -198,8 +198,8 @@ export class SessionBuilder {
         const sharedSecret = await Internal.crypto.ECDHE(remoteKey, ephPrivKey)
         const masterKey = await Internal.HKDF(sharedSecret, rootKey, 'WhisperRatchet')
 
-        session[ephPubKey] = {
-            messageKeys: {},
+        session.chains[ephPubKey] = {
+            messageKeys: [],
             chainKey: { counter: -1, key: masterKey[1] },
             chainType: ChainType.SENDING,
         }
@@ -207,8 +207,13 @@ export class SessionBuilder {
     }
 
     async processPreKey(device: DeviceType): Promise<SessionType> {
-        return this.processPreKeyJob(device)
-        // return SessionLock.queueJobForNumber(this.remoteAddress.toString(), () => this.processPreKeyJob(device))
+        // return this.processPreKeyJob(device)
+        const runJob = async () => {
+            const sess = await this.processPreKeyJob(device)
+            console.log(`preKeyProccessed`, { sess })
+            return sess
+        }
+        return SessionLock.queueJobForNumber(this.remoteAddress.toString(), runJob)
     }
 
     async processV3(record: SessionRecord, message: PreKeyWhisperMessage): Promise<number | void> {
