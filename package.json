@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@privacyresearch/curve25519-typescript": "^0.0.6",
+    "@privacyresearch/libsignal-protocol-protobuf-ts": "^0.0.1",
     "@types/bytebuffer": "^5.0.41",
     "@types/long": "^4.0.1",
     "bytebuffer": "^5.0.1",
