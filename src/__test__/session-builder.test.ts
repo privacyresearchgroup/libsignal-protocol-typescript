@@ -6,7 +6,7 @@ import { SessionRecord } from '../session-record'
 import { SignalProtocolAddress } from '../signal-protocol-address'
 import { SignalProtocolStore } from './storage-type'
 
-import { generateIdentity, generatePreKeyBundle } from '../__test-utils__/utils'
+import { generateIdentity, generatePreKeyBundle, assertEqualArrayBuffers } from '../__test-utils__/utils'
 import * as utils from '../helpers'
 import { KeyHelper } from '../key-helper'
 import { SessionCipher } from '../session-cipher'
@@ -59,8 +59,8 @@ test('basic prekey v3: the session can encrypt', async () => {
     const ciphertext = await aliceSessionCipher.encrypt(originalMessage)
     console.log({ ciphertext })
     expect(ciphertext.type).toBe(3) // PREKEY_BUNDLE
-    // const plaintext = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
-    // assertEqualArrayBuffers(plaintext, originalMessage) // assertEqualArrayBuffers(plaintext, originalMessage)
+    const plaintext = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body!, 'binary')
+    assertEqualArrayBuffers(plaintext, originalMessage) // assertEqualArrayBuffers(plaintext, originalMessage)
 })
 
 /*SESSIONCIPHER
