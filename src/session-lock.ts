@@ -6,24 +6,21 @@
 
 const jobQueue: { [k: string]: Promise<any> } = {}
 
-export type JobType = () => Promise<any>
+export type JobType<T> = () => Promise<T>
 
 export class SessionLock {
-    static queueJobForNumber(id: string, runJob: JobType): Promise<any> {
-        console.log(`queue job`, { id, jobQueue })
+    static queueJobForNumber<T>(id: string, runJob: JobType<T>): Promise<T> {
         const runPrevious = jobQueue[id] || Promise.resolve()
         const runCurrent = (jobQueue[id] = runPrevious.then(runJob, runJob))
         runCurrent
             .then(function () {
-                console.log(`clear queue`, { id, jobQueue })
                 if (jobQueue[id] === runCurrent) {
                     delete jobQueue[id]
                 }
             })
-            .catch((e) => {
-                console.warn(e)
+            .catch((_) => {
+                // console.warn(e)
             })
-        console.log(`returning runCurrent`, { id, jobQueue })
         return runCurrent
     }
 }
