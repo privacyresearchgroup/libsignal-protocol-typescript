@@ -10,46 +10,46 @@ export enum BaseKeyType {
     THEIRS = 2,
 }
 
-export interface SessionType {
-    indexInfo: IndexInfo
+export interface SessionType<T = ArrayBuffer> {
+    indexInfo: IndexInfo<T>
     registrationId: number
-    currentRatchet: Ratchet
-    pendingPreKey?: PendingPreKey
+    currentRatchet: Ratchet<T>
+    pendingPreKey?: PendingPreKey<T>
 
-    oldRatchetList: OldRatchetInfo[]
+    oldRatchetList: OldRatchetInfo<T>[]
 
     // TODO: In the original lib this map was part of the session type - you'd
     // say `chain = session[ephKey]`.  We're changing it to `chain = session.chains[ephKey]`
-    chains: { [ephKeyString: string]: Chain }
+    chains: { [ephKeyString: string]: Chain<T> }
 }
 
-export interface IndexInfo {
+export interface IndexInfo<T> {
     closed: number
-    remoteIdentityKey: ArrayBuffer
-    baseKey?: ArrayBuffer
+    remoteIdentityKey: T
+    baseKey?: T
     baseKeyType?: BaseKeyType
 }
 
-export interface Ratchet {
-    rootKey: ArrayBuffer
-    ephemeralKeyPair?: KeyPairType
-    lastRemoteEphemeralKey: ArrayBuffer
+export interface Ratchet<T> {
+    rootKey: T
+    ephemeralKeyPair?: KeyPairType<T>
+    lastRemoteEphemeralKey: T
     previousCounter: number
     added?: number //timestamp
 }
-export interface OldRatchetInfo {
-    ephemeralKey: ArrayBuffer
+export interface OldRatchetInfo<T> {
+    ephemeralKey: T
     added: number //timestamp
 }
 
-export interface Chain {
+export interface Chain<T> {
     chainType: ChainType
-    chainKey: { key: ArrayBuffer; counter: number }
-    messageKeys: ArrayBuffer[]
+    chainKey: { key: T; counter: number }
+    messageKeys: T[]
 }
 
-export interface PendingPreKey {
-    baseKey: ArrayBuffer
+export interface PendingPreKey<T> {
+    baseKey: T
     preKeyId?: number
     signedKeyId: number
 }
@@ -65,9 +65,9 @@ export interface EncryptionResult {
     registrationId: number
 }
 
-export interface DeviceType {
-    identityKey: ArrayBuffer
-    signedPreKey: SignedPublicPreKeyType
-    preKey?: PreKeyType
+export interface DeviceType<T = ArrayBuffer> {
+    identityKey: T
+    signedPreKey: SignedPublicPreKeyType<T>
+    preKey?: PreKeyType<T>
     registrationId: number
 }

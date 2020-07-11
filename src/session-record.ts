@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import ByteBuffer from 'bytebuffer'
+import base64 from 'base64-js'
+
 import * as util from './helpers'
-import { Stringable } from './types'
-import { SessionType, BaseKeyType } from './session-types'
+import { Stringable, KeyPairType } from './types'
+import { SessionType, BaseKeyType, PendingPreKey, Chain, OldRatchetInfo, Ratchet, IndexInfo } from './session-types'
 
 const ARCHIVED_STATES_MAX_LENGTH = 40
 const OLD_RATCHETS_MAX_LENGTH = 10
@@ -14,6 +16,7 @@ export class SessionRecord {
 
     static deserialize(serialized: string): SessionRecord {
         const data = JSON.parse(serialized)
+        console.log(`deserialize`, { serialized })
         if (data.version !== SESSION_RECORD_VERSION) {
             // migrate(data)
         }
@@ -21,7 +24,7 @@ export class SessionRecord {
         const record = new SessionRecord()
         record.sessions = {}
         for (const k of Object.keys(data.sessions)) {
-            record.sessions[k] = this.destringSession(data.sessions[k])
+            record.sessions[k] = sessionTypeStringToArrayBuffer(data.sessions[k])
         }
         if (
             record.sessions === undefined ||
@@ -34,23 +37,17 @@ export class SessionRecord {
         return record
     }
 
-    static destringSession(jsonsession: SessionType): SessionType {
-        const session = { ...jsonsession }
-        if (jsonsession.currentRatchet.ephemeralKeyPair) {
-            session.currentRatchet.ephemeralKeyPair = {
-                pubKey: util.toArrayBuffer(jsonsession.currentRatchet.ephemeralKeyPair.pubKey)!,
-                privKey: util.toArrayBuffer(jsonsession.currentRatchet.ephemeralKeyPair.privKey)!,
-            }
-        }
-
-        return session
-    }
-
     serialize(): string {
-        return jsonThing({
-            sessions: this.sessions,
+        const sessions: { [k: string]: SessionType<string> } = {}
+        for (const k of Object.keys(this.sessions)) {
+            sessions[k] = sessionTypeArrayBufferToString(this.sessions[k])
+        }
+        console.log(`serialize`, { sessions, absessions: this.sessions })
+        const json = {
+            sessions,
             version: this.version,
-        })
+        }
+        return JSON.stringify(json)
     }
 
     haveOpenSession(): boolean {
@@ -231,33 +228,159 @@ function isStringableObject(thing: unknown): thing is Stringable {
         (thing instanceof ArrayBuffer || thing instanceof Uint8Array || thing instanceof ByteBuffer)
     )
 }
-function ensureStringed(thing: unknown) {
-    if (typeof thing == 'string' || typeof thing == 'number' || typeof thing == 'boolean') {
-        return thing
-    } else if (isStringableObject(thing)) {
-        return util.toString(thing)
-    } else if (Array.isArray(thing)) {
-        return thing.map(ensureStringed)
-    } else if (typeof thing === 'object') {
-        const obj = {}
-        for (const key in thing) {
-            try {
-                obj[key] = ensureStringed(thing[key])
-            } catch (ex) {
-                console.log('Error serializing key', key)
-                throw ex
-            }
-        }
-        return obj
-    } else if (thing === null) {
-        return null
-    } else {
-        throw new Error('unsure of how to jsonify object of type ' + typeof thing)
+
+// Serialization helpers
+function toAB(s: string): ArrayBuffer {
+    return base64.toByteArray(s).buffer
+}
+function abToS(b: ArrayBuffer): string {
+    return base64.fromByteArray(new Uint8Array(b))
+}
+
+export function keyPairStirngToArrayBuffer(kp: KeyPairType<string>): KeyPairType<ArrayBuffer> {
+    return {
+        pubKey: toAB(kp.pubKey),
+        privKey: toAB(kp.privKey),
     }
 }
 
-function jsonThing(thing: unknown): string {
-    return JSON.stringify(ensureStringed(thing)) //TODO: jquery???
+export function keyPairArrayBufferToString(kp: KeyPairType<ArrayBuffer>): KeyPairType<string> {
+    return {
+        pubKey: abToS(kp.pubKey),
+        privKey: abToS(kp.privKey),
+    }
+}
+
+export function pendingPreKeyStringToArrayBuffer(ppk: PendingPreKey<string>): PendingPreKey<ArrayBuffer> {
+    const { preKeyId, signedKeyId } = ppk
+    return {
+        baseKey: toAB(ppk.baseKey),
+        preKeyId,
+        signedKeyId,
+    }
+}
+
+export function pendingPreKeyArrayBufferToString(ppk: PendingPreKey<ArrayBuffer>): PendingPreKey<string> {
+    const { preKeyId, signedKeyId } = ppk
+    return {
+        baseKey: abToS(ppk.baseKey),
+        preKeyId,
+        signedKeyId,
+    }
+}
+
+export function chainStringToArrayBuffer(c: Chain<string>): Chain<ArrayBuffer> {
+    const { chainType, chainKey, messageKeys } = c
+    const { key, counter } = chainKey
+    console.log(`chainStringToArrayBuffer`, { chainType, chainKey, messageKeys })
+    return {
+        chainType,
+        chainKey: {
+            key: base64.toByteArray(key).buffer,
+            counter,
+        },
+        messageKeys: messageKeys.map(toAB),
+    }
+}
+
+export function chainArrayBufferToString(c: Chain<ArrayBuffer>): Chain<string> {
+    const { chainType, chainKey, messageKeys } = c
+    const { key, counter } = chainKey
+    console.log(`chainArrayBufferToString`, { chainType, chainKey, messageKeys })
+    return {
+        chainType,
+        chainKey: {
+            key: abToS(key),
+            counter,
+        },
+        messageKeys: messageKeys.map(abToS),
+    }
+}
+
+export function oldRatchetInfoStringToArrayBuffer(ori: OldRatchetInfo<string>): OldRatchetInfo<ArrayBuffer> {
+    return {
+        ephemeralKey: toAB(ori.ephemeralKey),
+        added: ori.added,
+    }
+}
+
+export function oldRatchetInfoArrayBufferToString(ori: OldRatchetInfo<ArrayBuffer>): OldRatchetInfo<string> {
+    return {
+        ephemeralKey: abToS(ori.ephemeralKey),
+        added: ori.added,
+    }
+}
+
+export function ratchetStringToArrayBuffer(r: Ratchet<string>): Ratchet<ArrayBuffer> {
+    return {
+        rootKey: toAB(r.rootKey),
+        ephemeralKeyPair: r.ephemeralKeyPair && keyPairStirngToArrayBuffer(r.ephemeralKeyPair),
+        lastRemoteEphemeralKey: toAB(r.lastRemoteEphemeralKey),
+        previousCounter: r.previousCounter,
+        added: r.added,
+    }
+}
+
+export function ratchetArrayBufferToString(r: Ratchet<ArrayBuffer>): Ratchet<string> {
+    return {
+        rootKey: abToS(r.rootKey),
+        ephemeralKeyPair: r.ephemeralKeyPair && keyPairArrayBufferToString(r.ephemeralKeyPair),
+        lastRemoteEphemeralKey: abToS(r.lastRemoteEphemeralKey),
+        previousCounter: r.previousCounter,
+        added: r.added,
+    }
+}
+
+export function indexInfoStringToArrayBuffer(ii: IndexInfo<string>): IndexInfo<ArrayBuffer> {
+    const { closed, remoteIdentityKey, baseKey, baseKeyType } = ii
+    return {
+        closed,
+        remoteIdentityKey: toAB(remoteIdentityKey),
+        baseKey: baseKey ? toAB(baseKey) : undefined,
+        baseKeyType,
+    }
+}
+
+export function indexInfoArrayBufferToString(ii: IndexInfo<ArrayBuffer>): IndexInfo<string> {
+    const { closed, remoteIdentityKey, baseKey, baseKeyType } = ii
+    return {
+        closed,
+        remoteIdentityKey: abToS(remoteIdentityKey),
+        baseKey: baseKey ? abToS(baseKey) : undefined,
+        baseKeyType,
+    }
+}
+
+export function sessionTypeStringToArrayBuffer(sess: SessionType<string>): SessionType<ArrayBuffer> {
+    const { indexInfo, registrationId, currentRatchet, pendingPreKey, oldRatchetList, chains } = sess
+    const newChains: { [ephKeyString: string]: Chain<ArrayBuffer> } = {}
+    for (const k of Object.keys(chains)) {
+        newChains[k] = chainStringToArrayBuffer(chains[k])
+    }
+    return {
+        indexInfo: indexInfoStringToArrayBuffer(indexInfo),
+        registrationId,
+        currentRatchet: ratchetStringToArrayBuffer(currentRatchet),
+        pendingPreKey: pendingPreKey ? pendingPreKeyStringToArrayBuffer(pendingPreKey) : undefined,
+        oldRatchetList: oldRatchetList.map(oldRatchetInfoStringToArrayBuffer),
+        chains: newChains,
+    }
+}
+
+export function sessionTypeArrayBufferToString(sess: SessionType<ArrayBuffer>): SessionType<string> {
+    const { indexInfo, registrationId, currentRatchet, pendingPreKey, oldRatchetList, chains } = sess
+    const newChains: { [ephKeyString: string]: Chain<string> } = {}
+    for (const k of Object.keys(chains)) {
+        newChains[k] = chainArrayBufferToString(chains[k])
+    }
+    return {
+        indexInfo: indexInfoArrayBufferToString(indexInfo),
+        registrationId,
+        currentRatchet: ratchetArrayBufferToString(currentRatchet),
+        pendingPreKey: pendingPreKey ? pendingPreKeyArrayBufferToString(pendingPreKey) : undefined,
+        oldRatchetList: oldRatchetList.map(oldRatchetInfoArrayBufferToString),
+        chains: newChains,
+    }
 }
 
 /*

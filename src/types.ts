@@ -16,27 +16,27 @@ export interface FingerprintGeneratorType {
     ) => Promise<string>
 }
 
-export interface KeyPairType {
-    pubKey: ArrayBuffer
-    privKey: ArrayBuffer
+export interface KeyPairType<T = ArrayBuffer> {
+    pubKey: T
+    privKey: T
 }
 
-export interface PreKeyPairType {
+export interface PreKeyPairType<T = ArrayBuffer> {
     keyId: number
-    keyPair: KeyPairType
+    keyPair: KeyPairType<T>
 }
 
-export interface SignedPreKeyPairType extends PreKeyPairType {
-    signature: ArrayBuffer
+export interface SignedPreKeyPairType<T = ArrayBuffer> extends PreKeyPairType<T> {
+    signature: T
 }
 
-export interface PreKeyType {
+export interface PreKeyType<T = ArrayBuffer> {
     keyId: number
-    publicKey: ArrayBuffer
+    publicKey: T
 }
 
-export interface SignedPublicPreKeyType extends PreKeyType {
-    signature: ArrayBuffer
+export interface SignedPublicPreKeyType<T = ArrayBuffer> extends PreKeyType<T> {
+    signature: T
 }
 
 // TODO: Make this match reality
@@ -96,7 +96,7 @@ export interface AsyncCurveType {
 }
 
 // Type guards
-
+// TODO check if ArrayBuffer!
 export function isKeyPairType(kp: any): kp is KeyPairType {
     return !!(kp?.privKey && kp?.pubKey)
 }
