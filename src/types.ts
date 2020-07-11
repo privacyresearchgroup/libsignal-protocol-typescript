@@ -16,20 +16,30 @@ export interface FingerprintGeneratorType {
     ) => Promise<string>
 }
 
-export interface KeyPairType {
-    pubKey: ArrayBuffer
-    privKey: ArrayBuffer
+export interface KeyPairType<T = ArrayBuffer> {
+    pubKey: T
+    privKey: T
 }
 
-export interface PreKeyType {
+export interface PreKeyPairType<T = ArrayBuffer> {
     keyId: number
-    keyPair: KeyPairType
+    keyPair: KeyPairType<T>
 }
 
-export interface SignedPreKeyType extends PreKeyType {
-    signature: ArrayBuffer
+export interface SignedPreKeyPairType<T = ArrayBuffer> extends PreKeyPairType<T> {
+    signature: T
 }
 
+export interface PreKeyType<T = ArrayBuffer> {
+    keyId: number
+    publicKey: T
+}
+
+export interface SignedPublicPreKeyType<T = ArrayBuffer> extends PreKeyType<T> {
+    signature: T
+}
+
+// TODO: Make this match reality
 export interface RecordType {
     archiveCurrentState: () => void
     deleteAllSessions: () => void
@@ -44,20 +54,26 @@ export interface RecordType {
 
 // TODO: any????
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SessionRecordType = any
+export type SessionRecordType = string
 
+export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
+
+export enum Direction {
+    SENDING = 1,
+    RECEIVING = 2,
+}
 export interface StorageType {
-    Direction: {
-        SENDING: number
-        RECEIVING: number
-    }
-    getIdentityKeyPair: () => Promise<KeyPairType>
-    getLocalRegistrationId: () => Promise<number>
-    isTrustedIdentity: () => Promise<void>
-    loadPreKey: (encodedAddress: string, publicKey: ArrayBuffer | undefined, direction: number) => Promise<void>
-    loadSession: (encodedAddress: string) => Promise<SessionRecordType>
-    loadSignedPreKey: (keyId: number) => Promise<SignedPreKeyType>
-    removePreKey: (keyId: number) => Promise<void>
+    getIdentityKeyPair: () => Promise<KeyPairType | undefined>
+    getLocalRegistrationId: () => Promise<number | undefined>
+
+    // TODO: direction is unused in test code but probably should be required
+    isTrustedIdentity: (identifier: string, identityKey: ArrayBuffer, direction?: Direction) => Promise<boolean>
+    loadPreKey: (encodedAddress: string | number) => Promise<KeyPairType | undefined>
+    loadSession: (encodedAddress: string) => Promise<SessionRecordType | undefined>
+
+    // TODO: should this really return a signed prekey?
+    loadSignedPreKey: (keyId: number) => Promise<KeyPairType | undefined>
+    removePreKey: (keyId: number | string) => Promise<void>
     saveIdentity: (encodedAddress: string, publicKey: ArrayBuffer, nonblockingApproval?: boolean) => Promise<boolean>
     storeSession: (encodedAddress: string, record: SessionRecordType) => Promise<void>
 }
@@ -80,15 +96,15 @@ export interface AsyncCurveType {
 }
 
 // Type guards
-
+// TODO check if ArrayBuffer!
 export function isKeyPairType(kp: any): kp is KeyPairType {
     return !!(kp?.privKey && kp?.pubKey)
 }
 
-export function isPreKeyType(pk: any): pk is PreKeyType {
+export function isPreKeyType(pk: any): pk is PreKeyPairType {
     return typeof pk?.keyId === 'number' && isKeyPairType(pk?.keyPair)
 }
 
-export function isSignedPReKeyType(spk: any): spk is SignedPreKeyType {
+export function isSignedPReKeyType(spk: any): spk is SignedPreKeyPairType {
     return spk?.signature && isPreKeyType(spk)
 }

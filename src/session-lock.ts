@@ -1,21 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * jobQueue manages multiple queues indexed by device to serialize
  * session io ops on the database.
  */
 
-let jobQueue = {}
+const jobQueue: { [k: string]: Promise<any> } = {}
 
-export type JobType = () => Promise<any>
+export type JobType<T> = () => Promise<T>
 
 export class SessionLock {
-    static queueJobForNumber(id: string, runJob: JobType): Promise<any> {
+    static queueJobForNumber<T>(id: string, runJob: JobType<T>): Promise<T> {
         const runPrevious = jobQueue[id] || Promise.resolve()
         const runCurrent = (jobQueue[id] = runPrevious.then(runJob, runJob))
-        runCurrent.then(function () {
-            if (jobQueue[id] === runCurrent) {
-                delete jobQueue[id]
-            }
-        })
+        runCurrent
+            .then(function () {
+                if (jobQueue[id] === runCurrent) {
+                    delete jobQueue[id]
+                }
+            })
+            .catch((_) => {
+                // console.warn(e)
+            })
         return runCurrent
     }
 }

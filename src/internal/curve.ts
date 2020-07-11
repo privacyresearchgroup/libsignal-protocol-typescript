@@ -1,5 +1,6 @@
 import { KeyPairType } from '../types'
 import { Curve25519Wrapper, AsyncCurve25519Wrapper } from '@privacyresearch/curve25519-typescript'
+import { uint8ArrayToArrayBuffer } from '../helpers'
 
 export class Curve {
     // Curve 25519 crypto
@@ -120,11 +121,13 @@ function validatePrivKey(privKey: unknown): void {
     }
 }
 function validatePubKeyFormat(pubKey: ArrayBuffer): ArrayBuffer {
+    console.log(`validatePublicKeyFormat`, { pubKey })
     if (
         pubKey === undefined ||
         ((pubKey.byteLength != 33 || new Uint8Array(pubKey)[0] != 5) && pubKey.byteLength != 32)
     ) {
-        throw new Error('Invalid public key')
+        console.warn(`Invalid public key`, { pubKey })
+        throw new Error(`Invalid public key: ${pubKey} ${pubKey?.byteLength}`)
     }
     if (pubKey.byteLength == 33) {
         return pubKey.slice(1)
@@ -143,5 +146,5 @@ function processKeys(raw_keys: KeyPairType): KeyPairType {
     pub.set(origPub, 1)
     pub[0] = 5
 
-    return { pubKey: pub.buffer, privKey: raw_keys.privKey }
+    return { pubKey: uint8ArrayToArrayBuffer(pub), privKey: raw_keys.privKey }
 }
