@@ -2,10 +2,11 @@ import { SignalProtocolAddressType, StorageType, Direction, KeyPairType } from '
 import { DeviceType, SessionType, BaseKeyType, ChainType } from './session-types'
 
 import * as Internal from './internal'
-import * as util from './helpers'
+import * as base64 from 'base64-js'
 import { SessionRecord } from './session-record'
 import { PreKeyWhisperMessage } from '@privacyresearch/libsignal-protocol-protobuf-ts/lib/protos/WhisperTextProtocol'
 import { SessionLock } from './session-lock'
+import { uint8ArrayToArrayBuffer } from './helpers'
 
 export class SessionBuilder {
     remoteAddress: SignalProtocolAddressType
@@ -189,9 +190,9 @@ export class SessionBuilder {
             throw new Error(`Invalid ratchet - ephemeral key pair is missing`)
         }
 
-        const ephPrivKey = util.toArrayBuffer(ratchet.ephemeralKeyPair.privKey)
-        const rootKey = util.toArrayBuffer(ratchet.rootKey)
-        const ephPubKey = util.toString(ratchet.ephemeralKeyPair.pubKey)
+        const ephPrivKey = ratchet.ephemeralKeyPair.privKey
+        const rootKey = ratchet.rootKey
+        const ephPubKey = base64.fromByteArray(new Uint8Array(ratchet.ephemeralKeyPair.pubKey))
         if (!(ephPrivKey && ephPubKey && rootKey)) {
             throw new Error(`Missing key, cannot calculate sending ratchet`)
         }
@@ -219,12 +220,12 @@ export class SessionBuilder {
     async processV3(record: SessionRecord, message: PreKeyWhisperMessage): Promise<number | void> {
         const trusted = this.storage.isTrustedIdentity(
             this.remoteAddress.name,
-            message.identityKey.buffer,
+            uint8ArrayToArrayBuffer(message.identityKey),
             Direction.RECEIVING
         )
 
         if (!trusted) {
-            throw new Error(`Unknown identity key: ${message.identityKey.buffer}`)
+            throw new Error(`Unknown identity key: ${uint8ArrayToArrayBuffer(message.identityKey)}`)
         }
         const [preKeyPair, signedPreKeyPair] = await Promise.all([
             this.storage.loadPreKey(message.preKeyId),
@@ -258,12 +259,13 @@ export class SessionBuilder {
         if (!preKeyPair) {
             throw new Error(`preKeyPair is missing`)
         }
+
         const new_session = await this.initSession(
             false,
             preKeyPair,
             signedPreKeyPair,
-            message.identityKey.buffer,
-            message.baseKey.buffer,
+            uint8ArrayToArrayBuffer(message.identityKey),
+            uint8ArrayToArrayBuffer(message.baseKey),
             undefined,
             message.registrationId
         )

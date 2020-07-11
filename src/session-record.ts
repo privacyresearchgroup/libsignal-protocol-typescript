@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import ByteBuffer from 'bytebuffer'
+
 import base64 from 'base64-js'
 
 import * as util from './helpers'
-import { Stringable, KeyPairType } from './types'
+import { KeyPairType } from './types'
 import { SessionType, BaseKeyType, PendingPreKey, Chain, OldRatchetInfo, Ratchet, IndexInfo } from './session-types'
 
 const ARCHIVED_STATES_MAX_LENGTH = 40
@@ -16,7 +16,6 @@ export class SessionRecord {
 
     static deserialize(serialized: string): SessionRecord {
         const data = JSON.parse(serialized)
-        console.log(`deserialize`, { serialized })
         if (data.version !== SESSION_RECORD_VERSION) {
             // migrate(data)
         }
@@ -42,7 +41,6 @@ export class SessionRecord {
         for (const k of Object.keys(this.sessions)) {
             sessions[k] = sessionTypeArrayBufferToString(this.sessions[k])
         }
-        console.log(`serialize`, { sessions, absessions: this.sessions })
         const json = {
             sessions,
             version: this.version,
@@ -222,16 +220,9 @@ export class SessionRecord {
     }
 }
 
-function isStringableObject(thing: unknown): thing is Stringable {
-    return (
-        thing === Object(thing) &&
-        (thing instanceof ArrayBuffer || thing instanceof Uint8Array || thing instanceof ByteBuffer)
-    )
-}
-
 // Serialization helpers
 function toAB(s: string): ArrayBuffer {
-    return base64.toByteArray(s).buffer
+    return util.uint8ArrayToArrayBuffer(base64.toByteArray(s))
 }
 function abToS(b: ArrayBuffer): string {
     return base64.fromByteArray(new Uint8Array(b))
@@ -276,7 +267,7 @@ export function chainStringToArrayBuffer(c: Chain<string>): Chain<ArrayBuffer> {
     return {
         chainType,
         chainKey: {
-            key: base64.toByteArray(key).buffer,
+            key: util.uint8ArrayToArrayBuffer(base64.toByteArray(key)),
             counter,
         },
         messageKeys: messageKeys.map(toAB),

@@ -26,6 +26,9 @@ export function toArrayBuffer(thing: unknown): ArrayBuffer | undefined {
     return ByteBuffer.wrap(thing, 'binary').toArrayBuffer()
 }
 
+export function uint8ArrayToArrayBuffer(arr: Uint8Array): ArrayBuffer {
+    return arr.buffer.slice(arr.byteOffset, arr.byteLength + arr.byteOffset)
+}
 /*
 import ByteBuffer from 'bytebuffer'
 export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
