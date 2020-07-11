@@ -1,5 +1,5 @@
 import * as Internal from './internal'
-import { KeyPairType, SignedPreKeyType, PreKeyType } from './types'
+import { KeyPairType, SignedPreKeyPairType, PreKeyPairType } from './types'
 
 export class KeyHelper {
     static generateIdentityKeyPair(): Promise<KeyPairType> {
@@ -11,7 +11,10 @@ export class KeyHelper {
         return registrationId & 0x3fff
     }
 
-    static async generateSignedPreKey(identityKeyPair: KeyPairType, signedKeyId: number): Promise<SignedPreKeyType> {
+    static async generateSignedPreKey(
+        identityKeyPair: KeyPairType,
+        signedKeyId: number
+    ): Promise<SignedPreKeyPairType> {
         if (
             !(identityKeyPair.privKey instanceof ArrayBuffer) ||
             identityKeyPair.privKey.byteLength !== 32 ||
@@ -32,7 +35,7 @@ export class KeyHelper {
         }
     }
 
-    static async generatePreKey(keyId: number): Promise<PreKeyType> {
+    static async generatePreKey(keyId: number): Promise<PreKeyPairType> {
         if (!isNonNegativeInteger(keyId)) {
             throw new TypeError('Invalid argument for keyId: ' + keyId)
         }

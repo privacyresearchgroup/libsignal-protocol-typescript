@@ -1,4 +1,5 @@
 import * as Internal from '.'
+import * as util from '../helpers'
 import { KeyPairType } from '../types'
 import msrcrypto from 'msrcrypto'
 
@@ -84,3 +85,37 @@ export class Crypto {
 }
 
 export const crypto = new Crypto()
+
+// HKDF for TextSecure has a bit of additional handling - salts always end up being 32 bytes
+export function HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: unknown): Promise<ArrayBuffer[]> {
+    if (salt.byteLength != 32) {
+        throw new Error('Got salt of incorrect length')
+    }
+
+    const abInfo = util.toArrayBuffer(info)
+    if (!abInfo) {
+        throw new Error(`Invalid HKDF info`)
+    }
+
+    return crypto.HKDF(input, salt, abInfo)
+}
+
+export async function verifyMAC(data: ArrayBuffer, key: ArrayBuffer, mac: ArrayBuffer, length: number): Promise<void> {
+    const calculated_mac = await crypto.sign(key, data)
+    if (mac.byteLength != length || calculated_mac.byteLength < length) {
+        throw new Error('Bad MAC length')
+    }
+    const a = new Uint8Array(calculated_mac)
+    const b = new Uint8Array(mac)
+    let result = 0
+    for (let i = 0; i < mac.byteLength; ++i) {
+        result = result | (a[i] ^ b[i])
+    }
+    if (result !== 0) {
+        throw new Error('Bad MAC')
+    }
+}
+
+export function calculateMAC(key: ArrayBuffer, data: ArrayBuffer): Promise<ArrayBuffer> {
+    return crypto.sign(key, data)
+}

@@ -90,6 +90,7 @@ async function setupReceiveStep(
         privKeyQueue.push(data.newEphemeralKey)
     }
 
+
     if (data.ourIdentityKey === undefined) {
         return Promise.resolve()
     }

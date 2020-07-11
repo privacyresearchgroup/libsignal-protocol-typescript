@@ -27,15 +27,15 @@ export async function generateIdentity(store) {
 
 export async function generatePreKeyBundle(store, preKeyId, signedPreKeyId) {
     return Promise.all([store.getIdentityKeyPair(), store.getLocalRegistrationId()]).then(function (result) {
-        var identity = result[0]
-        var registrationId = result[1]
+        const identity = result[0]
+        const registrationId = result[1]
 
         return Promise.all([
             KeyHelper.generatePreKey(preKeyId),
             KeyHelper.generateSignedPreKey(identity, signedPreKeyId),
         ]).then(function (keys) {
-            var preKey = keys[0]
-            var signedPreKey = keys[1]
+            const preKey = keys[0]
+            const signedPreKey = keys[1]
 
             store.storePreKey(preKeyId, preKey.keyPair)
             store.storeSignedPreKey(signedPreKeyId, signedPreKey.keyPair)
