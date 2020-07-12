@@ -1,5 +1,6 @@
-import { SessionCipher } from '../session-cipher'
+import { SessionCipher, MessageType } from '../session-cipher'
 import { SessionBuilder } from '../session-builder'
+import { generateIdentity, generatePreKeyBundle, assertEqualArrayBuffers } from '../__test-utils__/utils'
 
 import { SignalProtocolStore } from './storage-type'
 import { SignalProtocolAddress } from '../signal-protocol-address'
@@ -22,11 +23,28 @@ export enum BaseKeyType {
     THEIRS = 2,
 }
 //--
+// TODO:  move these somewhere more sensible (this used to be textsecure.protobuf.IncomingPushMessageSignal.Type),
+// but i found this here:  libsignal-protocol-javascript/test/temp_helpers.js /
+export enum IncomingPushMessageSignalType {
+    UNKNOWN = 0,
+    CIPHERTEXT = 1,
+    KEY_EXCHANGE = 2,
+    PREKEY_BUNDLE = 3,
+    PLAINTEXT = 4,
+    RECEIPT = 5,
+    PREKEY_BUNDLE_DEVICE_CONTOL = 6,
+    DEVICE_CONTROL = 7,
+}
+export enum PushMessageContentFlags {
+    END_SESSION = 1,
+}
+//--
 
 const store = new SignalProtocolStore()
 const registrationId = 1337
 const address = new SignalProtocolAddress('foo', 1)
-const sessionCipher = new SessionCipher(store, address.toString())
+//TODO:  this line or the next line? const sessionCipher = new SessionCipher(store, address.toString())
+const sessionCipher = new SessionCipher(store, address)
 
 //before(function(done) {
 const record = new SessionRecord(registrationId)
@@ -123,8 +141,8 @@ function pad(plaintext: ArrayBuffer): ArrayBuffer {
 function unpad(paddedPlaintext: Uint8Array): Uint8Array {
     const ppt = new Uint8Array(paddedPlaintext)
     //paddedPlaintext = new Uint8Array(paddedPlaintext)
-    let plaintext
-    for (var i = ppt.length - 1; i >= 0; i--) {
+    let plaintext: Uint8Array
+    for (let i = ppt.length - 1; i >= 0; i--) {
         if (ppt[i] == 0x80) {
             plaintext = new Uint8Array(i)
             plaintext.set(ppt.subarray(0, i))
@@ -147,11 +165,13 @@ async function doReceiveStep(
     const sessionCipher = new SessionCipher(store, address)
     let plaintext: Uint8Array
     //    if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
-    if (data.type == protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
+    //    if (data.type == protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
+    if (data.type == IncomingPushMessageSignalType.CIPHERTEXT) {
         const dWS: Uint8Array = await sessionCipher.decryptWhisperMessage(data.message)
         plaintext = await unpad(dWS)
         //    } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
-    } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
+        // } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
+    } else if (data.type == IncomingPushMessageSignalType.PREKEY_BUNDLE) {
         const dPKWS: Uint8Array = await sessionCipher.decryptPreKeyWhisperMessage(data.message)
         plaintext = await unpad(dPKWS)
     } else {
@@ -160,7 +180,8 @@ async function doReceiveStep(
 
     const content = textsecure.protobuf.PushMessageContent.decode(plaintext)
     if (data.expectTerminateSession) {
-        if (content.flags == textsecure.protobuf.PushMessageContent.Flags.END_SESSION) {
+        //        if (content.flags == textsecure.protobuf.PushMessageContent.Flags.END_SESSION) {
+        if (content.flags == PushMessageContentFlags.END_SESSION) {
             return true
         } else {
             return false
@@ -317,8 +338,8 @@ tv.forEach(function (test) {
         })
 
         function describeStep(step) {
-            var direction = step[0]
-            var data = step[1]
+            const direction = step[0]
+            const data = step[1]
             if (direction === 'receiveMessage') {
                 if (data.expectTerminateSession) {
                     return 'receive end session message'
@@ -357,69 +378,82 @@ tv.forEach(function (test) {
         })
     })
 })
-/*
-    describe("key changes", function() {
-      var ALICE_ADDRESS = new SignalProtocolAddress("+14151111111", 1);
-      var BOB_ADDRESS   = new SignalProtocolAddress("+14152222222", 1);
-      var originalMessage = util.toArrayBuffer("L'homme est condamné à être libre");
 
-      var aliceStore = new SignalProtocolStore();
+describe('key changes', function () {
+    const ALICE_ADDRESS = new SignalProtocolAddress('+14151111111', 1)
+    const BOB_ADDRESS = new SignalProtocolAddress('+14152222222', 1)
+    const originalMessage = util.toArrayBuffer("L'homme est condamné à être libre")
 
-      var bobStore = new SignalProtocolStore();
-      var bobPreKeyId = 1337;
-      var bobSignedKeyId = 1;
+    const aliceStore = new SignalProtocolStore()
 
-      var Curve = libsignal.Curve;
+    const bobStore = new SignalProtocolStore()
+    const bobPreKeyId = 1337
+    const bobSignedKeyId = 1
 
-      var bobSessionCipher = new libsignal.SessionCipher(bobStore, ALICE_ADDRESS);
+    //var Curve = libsignal.Curve
 
-      before(function(done) {
-        Promise.all(
-          [aliceStore, bobStore].map(generateIdentity)
-        ).then(function() {
-            return generatePreKeyBundle(bobStore, bobPreKeyId, bobSignedKeyId);
-        }).then(function(preKeyBundle) {
-            var builder = new libsignal.SessionBuilder(aliceStore, BOB_ADDRESS);
-            return builder.processPreKey(preKeyBundle).then(function() {
-              var aliceSessionCipher = new libsignal.SessionCipher(aliceStore, BOB_ADDRESS);
-              return aliceSessionCipher.encrypt(originalMessage);
-            }).then(function(ciphertext) {
-              return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary');
-            }).then(function() {
-              done();
-            });
-          }).catch(done);
-      });
+    const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
+    //TODO should this be beforeAll or beforeEach?
+    beforeEach(function (done) {
+        Promise.all([aliceStore, bobStore].map(generateIdentity))
+            .then(function () {
+                return generatePreKeyBundle(bobStore, bobPreKeyId, bobSignedKeyId)
+            })
+            .then(function (preKeyBundle) {
+                const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
+                return builder
+                    .processPreKey(preKeyBundle)
+                    .then(function () {
+                        const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
+                        return aliceSessionCipher.encrypt(originalMessage)
+                    })
+                    .then(function (ciphertext) {
+                        return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
+                    })
+                    .then(function () {
+                        done()
+                    })
+            })
+            .catch(done)
+    })
 
-      describe("When bob's identity changes", function() {
-        var messageFromBob;
-        before(function(done) {
-          return bobSessionCipher.encrypt(originalMessage).then(function(ciphertext) {
-            messageFromBob = ciphertext;
-          }).then(function() {
-            return generateIdentity(bobStore);
-          }).then(function() {
-            return aliceStore.saveIdentity(BOB_ADDRESS.toString(), bobStore.get('identityKey').pubKey);
-          }).then(function() {
-            done();
-          });
-        });
+    describe("When bob's identity changes", function () {
+        let messageFromBob: MessageType
+        beforeEach(async () => {
+            const ciphertext = await bobSessionCipher.encrypt(originalMessage)
+            //                .then(function (ciphertext) {
+            messageFromBob = ciphertext
+            //              })
+            //    .then(function () {
+            await generateIdentity(bobStore)
+            // })
+            //.then(function () {
+            return aliceStore.saveIdentity(BOB_ADDRESS.toString(), bobStore.get('identityKey').pubKey)
+            //})
+            //      .then(function () {
+            //         done()
+            //    })
+        })
 
-        it('alice cannot encrypt with the old session', async () => {
-          var aliceSessionCipher = new libsignal.SessionCipher(aliceStore, BOB_ADDRESS);
-          return aliceSessionCipher.encrypt(originalMessage).catch(function(e) {
-            assert.strictEqual(e.message, 'Identity key changed');
-          }).then(done,done);
-        });
+        test('alice cannot encrypt with the old session', async () => {
+            const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
+            return aliceSessionCipher
+                .encrypt(originalMessage)
+                .catch(function (e) {
+                    assert.strictEqual(e.message, 'Identity key changed')
+                })
+                .then(done, done)
+        })
 
-        it('alice cannot decrypt from the old session', async () => {
-          var aliceSessionCipher = new libsignal.SessionCipher(aliceStore, BOB_ADDRESS);
-          return aliceSessionCipher.decryptWhisperMessage(messageFromBob.body, 'binary').catch(function(e) {
-            assert.strictEqual(e.message, 'Identity key changed');
-          }).then(done, done);
-        });
-      });
-    });
-
-*/
+        test('alice cannot decrypt from the old session', async () => {
+            const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
+            return aliceSessionCipher
+                .decryptWhisperMessage(messageFromBob.body, 'binary')
+                .catch(function (e) {
+                    assert.strictEqual(e.message, 'Identity key changed')
+                })
+                .then(done, done)
+        })
+    })
+})
