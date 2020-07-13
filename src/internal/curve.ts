@@ -121,7 +121,6 @@ function validatePrivKey(privKey: unknown): void {
     }
 }
 function validatePubKeyFormat(pubKey: ArrayBuffer): ArrayBuffer {
-    console.log(`validatePublicKeyFormat`, { pubKey })
     if (
         pubKey === undefined ||
         ((pubKey.byteLength != 33 || new Uint8Array(pubKey)[0] != 5) && pubKey.byteLength != 32)

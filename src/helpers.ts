@@ -29,14 +29,14 @@ export function toArrayBuffer(thing: unknown): ArrayBuffer | undefined {
     return ByteBuffer.wrap(thing, 'binary').toArrayBuffer()
 }
 
-export function isEqual(a: ArrayBuffer | undefined, b: ArrayBuffer | undefined): Boolean {
+export function isEqual(a: ArrayBuffer | undefined, b: ArrayBuffer | undefined): boolean {
     // TODO: Special-case arraybuffers, etc
     if (a === undefined || b === undefined) {
         return false
     }
-    const a1: String = toString(a)
-    const b1: String = toString(b)
-    var maxLength = Math.max(a1.length, b1.length)
+    const a1: string = toString(a)
+    const b1: string = toString(b)
+    const maxLength = Math.max(a1.length, b1.length)
     if (maxLength < 5) {
         throw new Error('a/b compare too short')
     }

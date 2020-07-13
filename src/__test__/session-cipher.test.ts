@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SessionCipher, MessageType } from '../session-cipher'
+import { SessionCipher } from '../session-cipher'
 import { SessionBuilder } from '../session-builder'
 import { generateIdentity, generatePreKeyBundle, assertEqualArrayBuffers } from '../__test-utils__/utils'
 
@@ -11,7 +11,13 @@ import { TestVectors } from './testvectors'
 import * as Internal from '../internal'
 import { KeyPairType } from '../types'
 import * as utils from '../helpers'
-import * as protobuf from '@privacyresearch/libsignal-protocol-protobuf-ts/lib/protos/WhisperTextProtocol'
+import {
+    PreKeyWhisperMessage,
+    PushMessageContent,
+    IncomingPushMessageSignal,
+    IncomingPushMessageSignal_Type,
+    PushMessageContent_Flags,
+} from '@privacyresearch/libsignal-protocol-protobuf-ts'
 
 //import { KeyPairType } from '../types'
 const tv = TestVectors()
@@ -23,22 +29,6 @@ export enum ChainType {
 export enum BaseKeyType {
     OURS = 1,
     THEIRS = 2,
-}
-//--
-// TODO:  move these somewhere more sensible (this used to be textsecure.protobuf.IncomingPushMessageSignal.Type),
-// but i found this here:  libsignal-protocol-javascript/test/temp_helpers.js /
-export enum IncomingPushMessageSignalType {
-    UNKNOWN = 0,
-    CIPHERTEXT = 1,
-    KEY_EXCHANGE = 2,
-    PREKEY_BUNDLE = 3,
-    PLAINTEXT = 4,
-    RECEIPT = 5,
-    PREKEY_BUNDLE_DEVICE_CONTOL = 6,
-    DEVICE_CONTROL = 7,
-}
-export enum PushMessageContentFlags {
-    END_SESSION = 1,
 }
 //--
 
@@ -63,6 +53,7 @@ const session = {
         closed: -1,
     },
     oldRatchetList: [],
+    chains: {},
 }
 record.updateSessionState(session)
 const prep = store.storeSession(address.toString(), record.serialize())
@@ -165,28 +156,25 @@ async function doReceiveStep(
     data: { [k: string]: any },
     privKeyQueue: Array<any>,
     address: string
-): Promise<Boolean> {
+): Promise<boolean> {
     await setupReceiveStep(store, data, privKeyQueue)
     const sessionCipher = new SessionCipher(store, address)
     let plaintext: Uint8Array
     //    if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
-    //    if (data.type == protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
-    if (data.type == IncomingPushMessageSignalType.CIPHERTEXT) {
-        const dWS: Uint8Array = await sessionCipher.decryptWhisperMessage(data.message)
+    if (data.type == IncomingPushMessageSignal_Type.CIPHERTEXT) {
+        const dWS: Uint8Array = new Uint8Array(await sessionCipher.decryptWhisperMessage(data.message))
         plaintext = await unpad(dWS)
         //    } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
-        // } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
-    } else if (data.type == IncomingPushMessageSignalType.PREKEY_BUNDLE) {
-        const dPKWS: Uint8Array = await sessionCipher.decryptPreKeyWhisperMessage(data.message)
+    } else if (data.type == IncomingPushMessageSignal_Type.PREKEY_BUNDLE) {
+        const dPKWS: Uint8Array = new Uint8Array(await sessionCipher.decryptPreKeyWhisperMessage(data.message))
         plaintext = await unpad(dPKWS)
     } else {
         throw new Error('Unknown data type in test vector')
     }
 
-    const content = textsecure.protobuf.PushMessageContent.decode(plaintext)
+    const content = PushMessageContent.decode(plaintext)
     if (data.expectTerminateSession) {
-        //        if (content.flags == textsecure.protobuf.PushMessageContent.Flags.END_SESSION) {
-        if (content.flags == PushMessageContentFlags.END_SESSION) {
+        if (content.flags == PushMessageContent_Flags.END_SESSION) {
             return true
         } else {
             return false
@@ -230,7 +218,7 @@ async function doSendStep(
     data: { [k: string]: any },
     privKeyQueue: Array<any>,
     address: string
-): Promise<Boolean> {
+): Promise<boolean> {
     await setupSendStep(store, data, privKeyQueue)
 
     if (data.getKeys !== undefined) {
@@ -241,34 +229,34 @@ async function doSendStep(
             signedPreKey: data.getKeys.devices[0].signedPreKey,
             registrationId: data.getKeys.devices[0].registrationId,
         }
-        const builder = new SessionBuilder(store, address)
+        const builder = new SessionBuilder(store, SignalProtocolAddress.fromString(address))
         await builder.processPreKey(deviceObject)
     }
 
-    const proto = new textsecure.protobuf.PushMessageContent()
+    const proto = PushMessageContent.fromJSON({})
     if (data.endSession) {
-        proto.flags = textsecure.protobuf.PushMessageContent.Flags.END_SESSION
+        proto.flags = PushMessageContent_Flags.END_SESSION
     } else {
         proto.body = data.smsText
     }
 
     const sessionCipher = new SessionCipher(store, address)
-    const msg = await sessionCipher.encrypt(pad(proto.toArrayBuffer()))
+    const msg = await sessionCipher.encrypt(pad(utils.toArrayBuffer(proto.body)!))
     //XXX: This should be all we do: isEqual(data.expectedCiphertext, encryptedMsg, false);
-    let res: Boolean
-    if (msg.type == 1) {
-        res = utils.isEqual(data.expectedCiphertext, msg.body)
+    let res: boolean
+    if (msg.type === 1) {
+        res = utils.isEqual(data.expectedCiphertext, utils.toArrayBuffer(msg.body))
     } else {
-        if (new Uint8Array(data.expectedCiphertext)[0] !== msg.body.charCodeAt(0)) {
+        if (new Uint8Array(data.expectedCiphertext)[0] !== msg.body?.charCodeAt(0)) {
             throw new Error('Bad version byte')
         }
 
         //        const expected = Internal.protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
         //const expected = protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
-        const msg = protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1))
-        const expected = protobuf.PreKeyWhisperMessage.encode(msg).finish()
+        const pkwmsg = PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1))
+        const expected = PreKeyWhisperMessage.encode(pkwmsg).finish()
 
-        if (!utils.isEqual(expected, msg.body.substring(1))) {
+        if (!utils.isEqual(expected, utils.toArrayBuffer(msg.body.substring(1)))) {
             throw new Error('Result does not match expected ciphertext')
         }
 
