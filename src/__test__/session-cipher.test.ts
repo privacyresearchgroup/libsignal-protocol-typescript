@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SessionCipher, MessageType } from '../session-cipher'
 import { SessionBuilder } from '../session-builder'
 import { generateIdentity, generatePreKeyBundle, assertEqualArrayBuffers } from '../__test-utils__/utils'
@@ -43,8 +45,7 @@ export enum PushMessageContentFlags {
 const store = new SignalProtocolStore()
 const registrationId = 1337
 const address = new SignalProtocolAddress('foo', 1)
-//TODO:  this line or the next line? const sessionCipher = new SessionCipher(store, address.toString())
-const sessionCipher = new SessionCipher(store, address)
+const sessionCipher = new SessionCipher(store, address.toString())
 
 //before(function(done) {
 const record = new SessionRecord(registrationId)
@@ -81,21 +82,25 @@ test('getRemoteRegistrationId, when a record does not exist, returns undefined',
 
 test('hasOpenSession returns true', async () => {
     await prep
-    const value = await sessionCipher.hasOpenSession(address.toString())
+    const value = await sessionCipher.hasOpenSession()
     expect(value).toBeTruthy()
 })
 
 it('hasOpenSession: no open session exists returns false', async () => {
     await prep
+    const address = new SignalProtocolAddress('bar', 1)
+    const sessionCipher = new SessionCipher(store, address.toString())
     const record = new SessionRecord()
     await store.storeSession(address.toString(), record.serialize())
-    const value = await sessionCipher.hasOpenSession(address.toString())
+    const value = await sessionCipher.hasOpenSession()
     expect(value).toBeFalsy()
 })
 
 test('hasOpenSession: when there is no session returns false', async () => {
     await prep
-    const value = await sessionCipher.hasOpenSession('bar')
+    const address = new SignalProtocolAddress('baz', 1)
+    const sessionCipher = new SessionCipher(store, address.toString())
+    const value = await sessionCipher.hasOpenSession()
     expect(value).toBeFalsy()
 })
 //----------------------------------------------------------------------------------------------------
