@@ -4,7 +4,7 @@ import { DeviceType, SessionType, BaseKeyType, ChainType } from './session-types
 import * as Internal from './internal'
 import * as base64 from 'base64-js'
 import { SessionRecord } from './session-record'
-import { PreKeyWhisperMessage } from '@privacyresearch/libsignal-protocol-protobuf-ts/lib/protos/WhisperTextProtocol'
+import * as ts from '@privacyresearch/libsignal-protocol-protobuf-ts'
 import { SessionLock } from './session-lock'
 import { uint8ArrayToArrayBuffer } from './helpers'
 
@@ -217,7 +217,7 @@ export class SessionBuilder {
         return SessionLock.queueJobForNumber(this.remoteAddress.toString(), runJob)
     }
 
-    async processV3(record: SessionRecord, message: PreKeyWhisperMessage): Promise<number | void> {
+    async processV3(record: SessionRecord, message: ts.textsecure.PreKeyWhisperMessage): Promise<number | void> {
         const trusted = this.storage.isTrustedIdentity(
             this.remoteAddress.name,
             uint8ArrayToArrayBuffer(message.identityKey),

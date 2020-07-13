@@ -11,8 +11,12 @@ const OLD_RATCHETS_MAX_LENGTH = 10
 const SESSION_RECORD_VERSION = 'v1'
 
 export class SessionRecord {
+    registrationId?: number
     sessions: { [k: string]: SessionType } = {}
     version = SESSION_RECORD_VERSION
+    constructor(registrationId?: number) {
+        this.registrationId = registrationId
+    }
 
     static deserialize(serialized: string): SessionRecord {
         const data = JSON.parse(serialized)
