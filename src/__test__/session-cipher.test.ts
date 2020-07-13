@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { SessionCipher } from '../session-cipher'
+import { SessionCipher, MessageType } from '../session-cipher'
 import { SessionBuilder } from '../session-builder'
 import { generateIdentity, generatePreKeyBundle, assertEqualArrayBuffers } from '../__test-utils__/utils'
 
@@ -129,6 +129,7 @@ function getPaddedMessageLength(messageLength: number): number {
 
 function pad(plaintext: ArrayBuffer): ArrayBuffer {
     const paddedPlaintext = new Uint8Array(getPaddedMessageLength(plaintext.byteLength + 1) - 1)
+    paddedPlaintext.fill(0)
     paddedPlaintext.set(new Uint8Array(plaintext))
     paddedPlaintext[plaintext.byteLength] = 0x80
     return paddedPlaintext.buffer
@@ -137,18 +138,16 @@ function pad(plaintext: ArrayBuffer): ArrayBuffer {
 function unpad(paddedPlaintext: Uint8Array): Uint8Array {
     const ppt = new Uint8Array(paddedPlaintext)
     //paddedPlaintext = new Uint8Array(paddedPlaintext)
-    let plaintext: Uint8Array
     for (let i = ppt.length - 1; i >= 0; i--) {
         if (ppt[i] == 0x80) {
-            plaintext = new Uint8Array(i)
+            const plaintext = new Uint8Array(i)
             plaintext.set(ppt.subarray(0, i))
-            plaintext = plaintext.buffer
-            break
+            return plaintext
         } else if (ppt[i] !== 0x00) {
             throw new Error('Invalid padding')
         }
     }
-    return plaintext
+    throw new Error('Invalid data: input empty or all 0x00s')
 }
 
 async function doReceiveStep(
@@ -366,7 +365,7 @@ tv.forEach(function (test) {
                     throw new Error('Invalid test')
                 }
 
-                expect(doStep(store, step[1], privKeyQueue, address)).toBeTruthy() //.then(assert).then(done, done)
+                await expect(doStep(store, step[1], privKeyQueue, address)).resolves.toBeTruthy() //.then(assert).then(done, done)
             })
         })
     })
@@ -375,7 +374,7 @@ tv.forEach(function (test) {
 describe('key changes', function () {
     const ALICE_ADDRESS = new SignalProtocolAddress('+14151111111', 1)
     const BOB_ADDRESS = new SignalProtocolAddress('+14152222222', 1)
-    const originalMessage = util.toArrayBuffer("L'homme est condamné à être libre")
+    const originalMessage = <ArrayBuffer>utils.toArrayBuffer("L'homme est condamné à être libre")
 
     const aliceStore = new SignalProtocolStore()
 
@@ -395,58 +394,57 @@ describe('key changes', function () {
             })
             .then(function (preKeyBundle) {
                 const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
-                return builder
-                    .processPreKey(preKeyBundle)
-                    .then(function () {
-                        const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
-                        return aliceSessionCipher.encrypt(originalMessage)
-                    })
-                    .then(function (ciphertext) {
-                        return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary')
-                    })
-                    .then(function () {
-                        done()
-                    })
+                return (
+                    builder
+                        .processPreKey(preKeyBundle)
+                        .then(function () {
+                            const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
+                            return aliceSessionCipher.encrypt(originalMessage)
+                        })
+                        .then(function (ciphertext) {
+                            return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body!, 'binary')
+                        })
+                        .then(function () {
+                            done()
+                        })
+                        // })
+                        .catch(done)
+                )
             })
-            .catch(done)
     })
 
     describe("When bob's identity changes", function () {
         let messageFromBob: MessageType
         beforeEach(async () => {
             const ciphertext = await bobSessionCipher.encrypt(originalMessage)
-            //                .then(function (ciphertext) {
             messageFromBob = ciphertext
-            //              })
-            //    .then(function () {
             await generateIdentity(bobStore)
-            // })
-            //.then(function () {
-            return aliceStore.saveIdentity(BOB_ADDRESS.toString(), bobStore.get('identityKey').pubKey)
-            //})
-            //      .then(function () {
-            //         done()
-            //    })
+            const idK = <KeyPairType>bobStore.get('identityKey', undefined)
+            const pubK = idK.pubKey
+            return aliceStore.saveIdentity(BOB_ADDRESS.toString(), pubK)
         })
 
         test('alice cannot encrypt with the old session', async () => {
             const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
-            return aliceSessionCipher
-                .encrypt(originalMessage)
-                .catch(function (e) {
-                    assert.strictEqual(e.message, 'Identity key changed')
-                })
-                .then(done, done)
+            await expect(async () => {
+                //
+                await aliceSessionCipher.encrypt(originalMessage)
+            }).rejects.toThrow('Identity key changed')
+            // .catch(function (e) {
+            //     assert.strictEqual(e.message, 'Identity key changed')
+            // })
+            // .then(done, done)
         })
 
         test('alice cannot decrypt from the old session', async () => {
             const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
-            return aliceSessionCipher
-                .decryptWhisperMessage(messageFromBob.body, 'binary')
-                .catch(function (e) {
-                    assert.strictEqual(e.message, 'Identity key changed')
-                })
-                .then(done, done)
+            await expect(async () => {
+                await aliceSessionCipher.decryptWhisperMessage(<string>messageFromBob.body, 'binary')
+            }).rejects.toThrow('Identity key changed')
+            //                .catch(function (e) {
+            //                   assert.strictEqual(e.message, 'Identity key changed')
+            //              })
+            //             .then(done, done)
         })
     })
 })
