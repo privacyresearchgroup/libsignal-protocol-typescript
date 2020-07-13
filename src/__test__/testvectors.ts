@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { hexToArrayBuffer } from '../__test-utils__/utils'
 
 type aKeyType = {
@@ -34,13 +35,13 @@ type testVectorData = {
     preKeyId?: number
     ourSignedPreKey?: ArrayBuffer
     signedPreKeyId?: number
-    expectTerminateSession?: Boolean
+    expectTerminateSession?: boolean
 }
 type testType = [string, testVectorData]
 
 export function TestVectors(): Array<Record<string, any>> {
     // We're gonna throw the finalized tests in here:
-    let tests = <Array<Record<string, any>>>[]
+    const tests = <Array<Record<string, any>>>[]
 
     // The common-case ALICE test vectors themselves...
     const TwoPartyTestVectorsAlice: testType[] = [
@@ -125,7 +126,7 @@ export function TestVectors(): Array<Record<string, any>> {
     tests[tests.length] = { name: 'Standard Signal Protocol Test Vectors as Alice', vectors: TwoPartyTestVectorsAlice }
 
     tests[tests.length] = (function () {
-        let test: Array<testType> = []
+        const test: Array<testType> = []
         test[0] = TwoPartyTestVectorsAlice[0]
         test[1] = TwoPartyTestVectorsAlice[1]
 
@@ -216,11 +217,9 @@ export function TestVectors(): Array<Record<string, any>> {
 
     const TwoPartyTestVectorsBobCopy = function () {
         const orig = TwoPartyTestVectorsBob
-        let v: testType[] = []
+        const v: testType[] = []
         for (let i = 0; i < TwoPartyTestVectorsBob.length; i++) {
-            // v[i] = []
-            v[i][0] = orig[i][0]
-            v[i][1] = orig[i][1]
+            v[i] = [...orig[i]]
         }
         return v
     }
@@ -378,11 +377,9 @@ export function TestVectors(): Array<Record<string, any>> {
 
     const EndSessionTestVectorsBobCopy = function () {
         const orig = EndSessionTestVectorsBob
-        let v: testType[] = []
+        const v: testType[] = []
         for (let i = 0; i < EndSessionTestVectorsBob.length; i++) {
-            //v[i] = []
-            v[i][0] = orig[i][0]
-            v[i][1] = orig[i][1]
+            v[i] = [...orig[i]]
         }
         return v
     }
