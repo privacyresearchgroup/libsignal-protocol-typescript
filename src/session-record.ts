@@ -11,8 +11,12 @@ const OLD_RATCHETS_MAX_LENGTH = 10
 const SESSION_RECORD_VERSION = 'v1'
 
 export class SessionRecord {
+    registrationId?: number
     sessions: { [k: string]: SessionType } = {}
     version = SESSION_RECORD_VERSION
+    constructor(registrationId?: number) {
+        this.registrationId = registrationId
+    }
 
     static deserialize(serialized: string): SessionRecord {
         const data = JSON.parse(serialized)
@@ -263,7 +267,6 @@ export function pendingPreKeyArrayBufferToString(ppk: PendingPreKey<ArrayBuffer>
 export function chainStringToArrayBuffer(c: Chain<string>): Chain<ArrayBuffer> {
     const { chainType, chainKey, messageKeys } = c
     const { key, counter } = chainKey
-    console.log(`chainStringToArrayBuffer`, { chainType, chainKey, messageKeys })
     return {
         chainType,
         chainKey: {
@@ -277,7 +280,6 @@ export function chainStringToArrayBuffer(c: Chain<string>): Chain<ArrayBuffer> {
 export function chainArrayBufferToString(c: Chain<ArrayBuffer>): Chain<string> {
     const { chainType, chainKey, messageKeys } = c
     const { key, counter } = chainKey
-    console.log(`chainArrayBufferToString`, { chainType, chainKey, messageKeys })
     return {
         chainType,
         chainKey: {
