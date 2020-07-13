@@ -267,7 +267,6 @@ export function pendingPreKeyArrayBufferToString(ppk: PendingPreKey<ArrayBuffer>
 export function chainStringToArrayBuffer(c: Chain<string>): Chain<ArrayBuffer> {
     const { chainType, chainKey, messageKeys } = c
     const { key, counter } = chainKey
-    console.log(`chainStringToArrayBuffer`, { chainType, chainKey, messageKeys })
     return {
         chainType,
         chainKey: {
@@ -281,7 +280,6 @@ export function chainStringToArrayBuffer(c: Chain<string>): Chain<ArrayBuffer> {
 export function chainArrayBufferToString(c: Chain<ArrayBuffer>): Chain<string> {
     const { chainType, chainKey, messageKeys } = c
     const { key, counter } = chainKey
-    console.log(`chainArrayBufferToString`, { chainType, chainKey, messageKeys })
     return {
         chainType,
         chainKey: {
