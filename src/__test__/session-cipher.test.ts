@@ -10,7 +10,13 @@ import { TestVectors } from './testvectors'
 import * as Internal from '../internal'
 import { KeyPairType } from '../types'
 import * as utils from '../helpers'
-import * as ts from '@privacyresearch/libsignal-protocol-protobuf-ts'
+import {
+    PreKeyWhisperMessage,
+    PushMessageContent,
+    IncomingPushMessageSignal,
+    IncomingPushMessageSignal_Type,
+    PushMessageContent_Flags,
+} from '@privacyresearch/libsignal-protocol-protobuf-ts'
 
 //import { KeyPairType } from '../types'
 const tv = TestVectors()
@@ -154,20 +160,20 @@ async function doReceiveStep(
     const sessionCipher = new SessionCipher(store, address)
     let plaintext: Uint8Array
     //    if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
-    if (data.type == ts.textsecure.IncomingPushMessageSignal.Type.CIPHERTEXT) {
+    if (data.type == IncomingPushMessageSignal_Type.CIPHERTEXT) {
         const dWS: Uint8Array = new Uint8Array(await sessionCipher.decryptWhisperMessage(data.message))
         plaintext = await unpad(dWS)
         //    } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
-    } else if (data.type == ts.textsecure.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
+    } else if (data.type == IncomingPushMessageSignal_Type.PREKEY_BUNDLE) {
         const dPKWS: Uint8Array = new Uint8Array(await sessionCipher.decryptPreKeyWhisperMessage(data.message))
         plaintext = await unpad(dPKWS)
     } else {
         throw new Error('Unknown data type in test vector')
     }
 
-    const content = ts.textsecure.PushMessageContent.decode(plaintext)
+    const content = PushMessageContent.decode(plaintext)
     if (data.expectTerminateSession) {
-        if (content.flags == ts.textsecure.PushMessageContent.Flags.END_SESSION) {
+        if (content.flags == PushMessageContent_Flags.END_SESSION) {
             return true
         } else {
             return false
@@ -226,9 +232,9 @@ async function doSendStep(
         await builder.processPreKey(deviceObject)
     }
 
-    const proto = new ts.textsecure.PushMessageContent()
+    const proto = PushMessageContent.fromJSON({})
     if (data.endSession) {
-        proto.flags = ts.textsecure.PushMessageContent.Flags.END_SESSION
+        proto.flags = PushMessageContent_Flags.END_SESSION
     } else {
         proto.body = data.smsText
     }
@@ -246,8 +252,8 @@ async function doSendStep(
 
         //        const expected = Internal.protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
         //const expected = protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
-        const pkwmsg = ts.textsecure.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1))
-        const expected = ts.textsecure.PreKeyWhisperMessage.encode(pkwmsg).finish()
+        const pkwmsg = PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1))
+        const expected = PreKeyWhisperMessage.encode(pkwmsg).finish()
 
         if (!utils.isEqual(expected, utils.toArrayBuffer(msg.body.substring(1)))) {
             throw new Error('Result does not match expected ciphertext')

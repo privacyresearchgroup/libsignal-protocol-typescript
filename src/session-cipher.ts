@@ -1,7 +1,7 @@
 import { StorageType, Direction } from './types'
 import { Chain, ChainType, SessionType } from './session-types'
 import { SignalProtocolAddress } from './signal-protocol-address'
-import * as ts from '@privacyresearch/libsignal-protocol-protobuf-ts'
+import { PreKeyWhisperMessage, WhisperMessage } from '@privacyresearch/libsignal-protocol-protobuf-ts'
 import * as base64 from 'base64-js'
 import * as util from './helpers'
 import * as Internal from './internal'
@@ -42,7 +42,7 @@ export class SessionCipher {
         }
 
         const address = this.remoteAddress.toString()
-        const msg = new ts.textsecure.WhisperMessage()
+        const msg = WhisperMessage.fromJSON({})
         const [ourIdentityKey, myRegistrationId, record] = await this.loadKeysAndRecord(address)
         if (!record) {
             throw new Error('No record for ' + address)
@@ -68,7 +68,7 @@ export class SessionCipher {
 
         const ciphertext = await Internal.crypto.encrypt(keys[0], buffer, keys[2].slice(0, 16))
         msg.ciphertext = new Uint8Array(ciphertext)
-        const encodedMsg = ts.textsecure.WhisperMessage.encode(msg).finish()
+        const encodedMsg = WhisperMessage.encode(msg).finish()
 
         const macInput = new Uint8Array(encodedMsg.byteLength + 33 * 2 + 1)
         macInput.set(new Uint8Array(ourIdentityKey.pubKey))
@@ -98,7 +98,7 @@ export class SessionCipher {
         await this.storage.storeSession(address, record.serialize())
 
         if (session.pendingPreKey !== undefined) {
-            const preKeyMsg = new ts.textsecure.PreKeyWhisperMessage()
+            const preKeyMsg = PreKeyWhisperMessage.fromJSON({})
             preKeyMsg.identityKey = new Uint8Array(ourIdentityKey.pubKey)
             preKeyMsg.registrationId = myRegistrationId
 
@@ -109,7 +109,7 @@ export class SessionCipher {
             preKeyMsg.signedPreKeyId = session.pendingPreKey.signedKeyId
 
             preKeyMsg.message = encodedMsgWithMAC
-            const encodedPreKeyMsg = ts.textsecure.PreKeyWhisperMessage.encode(preKeyMsg).finish()
+            const encodedPreKeyMsg = PreKeyWhisperMessage.encode(preKeyMsg).finish()
             const result = String.fromCharCode((3 << 4) | 3) + util.toString(encodedPreKeyMsg)
             return {
                 type: 3,
@@ -133,7 +133,7 @@ export class SessionCipher {
         ])
     }
 
-    private prepareChain = async (address: string, record: SessionRecord, msg: ts.textsecure.WhisperMessage) => {
+    private prepareChain = async (address: string, record: SessionRecord, msg: WhisperMessage) => {
         const session = record.getOpenSession()
         if (!session) {
             throw new Error('No session to encrypt message for ' + address)
@@ -229,7 +229,7 @@ export class SessionCipher {
         const address = this.remoteAddress.toString()
         const job = async () => {
             let record = await this.getRecord(address)
-            const preKeyProto = ts.textsecure.PreKeyWhisperMessage.decode(messageData)
+            const preKeyProto = PreKeyWhisperMessage.decode(messageData)
             if (!record) {
                 if (preKeyProto.registrationId === undefined) {
                     throw new Error('No registrationId')
@@ -335,7 +335,7 @@ export class SessionCipher {
         const messageProto = messageBytes.slice(1, messageBytes.byteLength - 8)
         const mac = messageBytes.slice(messageBytes.byteLength - 8, messageBytes.byteLength)
 
-        const message = ts.textsecure.WhisperMessage.decode(new Uint8Array(messageProto))
+        const message = WhisperMessage.decode(new Uint8Array(messageProto))
         const remoteEphemeralKey = uint8ArrayToArrayBuffer(message.ephemeralKey)
 
         if (session === undefined) {
