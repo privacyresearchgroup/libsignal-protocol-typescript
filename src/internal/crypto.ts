@@ -15,7 +15,7 @@ export class Crypto {
     getRandomBytes(n: number): ArrayBuffer {
         const array = new Uint8Array(n)
         webcrypto.getRandomValues(array)
-        return array.buffer
+        return util.uint8ArrayToArrayBuffer(array)
     }
 
     async encrypt(key: ArrayBuffer, data: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer> {

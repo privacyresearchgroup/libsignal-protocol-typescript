@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SessionCipher, MessageType } from '../session-cipher'
 import { SessionBuilder } from '../session-builder'
-import { generateIdentity, generatePreKeyBundle, assertEqualArrayBuffers } from '../__test-utils__/utils'
+import { generateIdentity, generatePreKeyBundle } from '../__test-utils__/utils'
 
 import { SignalProtocolStore } from './storage-type'
 import { SignalProtocolAddress } from '../signal-protocol-address'
@@ -131,7 +131,7 @@ function pad(plaintext: ArrayBuffer): ArrayBuffer {
     paddedPlaintext.fill(0)
     paddedPlaintext.set(new Uint8Array(plaintext))
     paddedPlaintext[plaintext.byteLength] = 0x80
-    return paddedPlaintext.buffer
+    return utils.uint8ArrayToArrayBuffer(paddedPlaintext)
 }
 
 function unpad(paddedPlaintext: Uint8Array): Uint8Array {

@@ -147,7 +147,7 @@ export class SessionBuilder {
             sharedSecret.set(new Uint8Array(ecRes4), 32 * 4)
         }
 
-        const masterKey = await Internal.HKDF(sharedSecret.buffer, new ArrayBuffer(32), 'WhisperText')
+        const masterKey = await Internal.HKDF(uint8ArrayToArrayBuffer(sharedSecret), new ArrayBuffer(32), 'WhisperText')
 
         const session: SessionType = {
             registrationId: registrationId,
