@@ -14,13 +14,12 @@ import * as utils from '../helpers'
 import {
     PreKeyWhisperMessage,
     PushMessageContent,
-    IncomingPushMessageSignal,
     IncomingPushMessageSignal_Type,
     PushMessageContent_Flags,
 } from '@privacyresearch/libsignal-protocol-protobuf-ts'
 
 //import { KeyPairType } from '../types'
-const tv = TestVectors()
+const tv = TestVectors() // .slice(0, 2)
 // TODO: import this when Rolfe gets it right
 export enum ChainType {
     SENDING = 1,
@@ -114,7 +113,7 @@ async function setupReceiveStep(
     await store.storeSignedPreKey(data.signedPreKeyId, signedKeyPair)
     if (data.ourPreKey !== undefined) {
         const keyPair = await Internal.crypto.createKeyPair(data.ourPreKey)
-        store.storePreKey(data.preKeyId, keyPair)
+        await store.storePreKey(data.preKeyId, keyPair)
     }
 }
 
@@ -154,40 +153,46 @@ async function doReceiveStep(
     store: SignalProtocolStore,
     data: { [k: string]: any },
     privKeyQueue: Array<any>,
-    address: string
+    address: SignalProtocolAddress
 ): Promise<boolean> {
     await setupReceiveStep(store, data, privKeyQueue)
     const sessionCipher = new SessionCipher(store, address)
-    let plaintext: Uint8Array
-    //    if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
-    if (data.type == IncomingPushMessageSignal_Type.CIPHERTEXT) {
-        const dWS: Uint8Array = new Uint8Array(await sessionCipher.decryptWhisperMessage(data.message))
-        plaintext = await unpad(dWS)
-        //    } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
-    } else if (data.type == IncomingPushMessageSignal_Type.PREKEY_BUNDLE) {
-        const dPKWS: Uint8Array = new Uint8Array(await sessionCipher.decryptPreKeyWhisperMessage(data.message))
-        plaintext = await unpad(dPKWS)
-    } else {
-        throw new Error('Unknown data type in test vector')
-    }
 
-    const content = PushMessageContent.decode(plaintext)
-    if (data.expectTerminateSession) {
-        if (content.flags == PushMessageContent_Flags.END_SESSION) {
-            return true
+    try {
+        let plaintext: Uint8Array
+        //    if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
+        if (data.type == IncomingPushMessageSignal_Type.CIPHERTEXT) {
+            const dWS: Uint8Array = new Uint8Array(await sessionCipher.decryptWhisperMessage(data.message))
+            plaintext = await unpad(dWS)
+            //    } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
+        } else if (data.type == IncomingPushMessageSignal_Type.PREKEY_BUNDLE) {
+            const dPKWS: Uint8Array = new Uint8Array(await sessionCipher.decryptPreKeyWhisperMessage(data.message))
+            plaintext = await unpad(dPKWS)
         } else {
-            return false
+            throw new Error('Unknown data type in test vector')
         }
+
+        const content = PushMessageContent.decode(plaintext)
+        if (data.expectTerminateSession) {
+            if (content.flags == PushMessageContent_Flags.END_SESSION) {
+                return true
+            } else {
+                return false
+            }
+        }
+        return (
+            content.body == data.expectedSmsText
+            //.catch(function checkException(e) {
+            //   if (data.expectException) {
+            //       return true
+            //   }
+            //   throw e
+            // })
+        )
+    } catch (e) {
+        console.error(e)
+        throw e
     }
-    return (
-        content.body == data.expectedSmsText
-        //.catch(function checkException(e) {
-        //   if (data.expectException) {
-        //       return true
-        //   }
-        //   throw e
-        // })
-    )
 }
 
 async function setupSendStep(
@@ -206,8 +211,12 @@ async function setupSendStep(
     }
 
     if (data.ourIdentityKey !== undefined) {
-        const keyPair: KeyPairType = await Internal.crypto.createKeyPair(data.ourIdentityKey)
-        store.put('identityKey', keyPair)
+        try {
+            const keyPair: KeyPairType = await Internal.crypto.createKeyPair(data.ourIdentityKey)
+            store.put('identityKey', keyPair)
+        } catch (e) {
+            console.error({ e })
+        }
     }
     return Promise.resolve()
 }
@@ -216,56 +225,73 @@ async function doSendStep(
     store: SignalProtocolStore,
     data: { [k: string]: any },
     privKeyQueue: Array<any>,
-    address: string
+    address: SignalProtocolAddress
 ): Promise<boolean> {
     await setupSendStep(store, data, privKeyQueue)
-
-    if (data.getKeys !== undefined) {
-        const deviceObject = {
-            encodedNumber: address.toString(),
-            identityKey: data.getKeys.identityKey,
-            preKey: data.getKeys.devices[0].preKey,
-            signedPreKey: data.getKeys.devices[0].signedPreKey,
-            registrationId: data.getKeys.devices[0].registrationId,
-        }
-        const builder = new SessionBuilder(store, SignalProtocolAddress.fromString(address))
-        await builder.processPreKey(deviceObject)
-    }
-
-    const proto = PushMessageContent.fromJSON({})
-    if (data.endSession) {
-        proto.flags = PushMessageContent_Flags.END_SESSION
-    } else {
-        proto.body = data.smsText
-    }
-
-    const sessionCipher = new SessionCipher(store, address)
-    const msg = await sessionCipher.encrypt(pad(utils.toArrayBuffer(proto.body)!))
-    //XXX: This should be all we do: isEqual(data.expectedCiphertext, encryptedMsg, false);
-    let res: boolean
-    if (msg.type === 1) {
-        res = utils.isEqual(data.expectedCiphertext, utils.toArrayBuffer(msg.body))
-    } else {
-        if (new Uint8Array(data.expectedCiphertext)[0] !== msg.body?.charCodeAt(0)) {
-            throw new Error('Bad version byte')
+    try {
+        if (data.getKeys !== undefined) {
+            const deviceObject = {
+                encodedNumber: address.toString(),
+                identityKey: data.getKeys.identityKey,
+                preKey: data.getKeys.devices[0].preKey,
+                signedPreKey: data.getKeys.devices[0].signedPreKey,
+                registrationId: data.getKeys.devices[0].registrationId,
+            }
+            const builder = new SessionBuilder(store, address)
+            await builder.processPreKey(deviceObject)
         }
 
-        //        const expected = Internal.protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
-        //const expected = protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
-        const pkwmsg = PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1))
-        const expected = PreKeyWhisperMessage.encode(pkwmsg).finish()
-
-        if (!utils.isEqual(expected, utils.toArrayBuffer(msg.body.substring(1)))) {
-            throw new Error('Result does not match expected ciphertext')
+        const proto = PushMessageContent.fromJSON({})
+        if (data.endSession) {
+            proto.flags = PushMessageContent_Flags.END_SESSION
+        } else {
+            proto.body = data.smsText
         }
 
-        res = true
-    }
-    if (data.endSession) {
-        await sessionCipher.closeOpenSessionForDevice()
+        const sessionCipher = new SessionCipher(store, address)
+        console.log(`about to encrypt`, { proto })
+        const msg = await sessionCipher.encrypt(pad(utils.toArrayBuffer(proto.body)!))
+        console.log({ msg })
+        //XXX: This should be all we do: isEqual(data.expectedCiphertext, encryptedMsg, false);
+        let res: boolean
+        if (msg.type === 1) {
+            res = utils.isEqual(data.expectedCiphertext, utils.toArrayBuffer(msg.body))
+        } else {
+            if (new Uint8Array(data.expectedCiphertext)[0] !== msg.body?.charCodeAt(0)) {
+                throw new Error('Bad version byte')
+            }
+            console.log({
+                expectedCiphertext: data.expectedCiphertext,
+                msg: utils.toArrayBuffer(msg.body.substring(1)),
+            })
+
+            //        const expected = Internal.protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
+            //const expected = protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
+            // const parsedEncMsg = PreKeyWhisperMessage.decode(
+            //     new Uint8Array(utils.toArrayBuffer(msg.body.substring(1))!)
+            // )
+            const pkwmsg = PreKeyWhisperMessage.decode(new Uint8Array(data.expectedCiphertext).slice(1))
+            // console.log({ pkwmsg, parsedEncMsg })
+            const expected = PreKeyWhisperMessage.encode(pkwmsg).finish()
+            console.log({
+                expected: utils.uint8ArrayToArrayBuffer(expected),
+                msg: utils.toArrayBuffer(msg.body.substring(1)),
+            })
+            if (!utils.isEqual(utils.uint8ArrayToArrayBuffer(expected), utils.toArrayBuffer(msg.body.substring(1)))) {
+                throw new Error('Result does not match expected ciphertext')
+            }
+
+            res = true
+        }
+        if (data.endSession) {
+            await sessionCipher.closeOpenSessionForDevice()
+            return res
+        }
         return res
+    } catch (e) {
+        console.error(e, { store })
+        throw e
     }
-    return res
 }
 
 function getDescription(step: { [k: string]: any }): string {
@@ -293,14 +319,14 @@ function getDescription(step: { [k: string]: any }): string {
 
 //TestVectors.forEach(function (test) {
 tv.forEach(function (test) {
-    describe(test.name, async () => {
+    describe(test.name, () => {
         // function (done) {
         //  this.timeout(20000)
 
         const privKeyQueue = []
-        const origCreateKeyPair = Internal.crypto.createKeyPair
+        const origCreateKeyPair = Internal.crypto.createKeyPair.bind(Internal.crypto)
 
-        beforeAll(function () {
+        beforeEach(function () {
             // Shim createKeyPair to return predetermined keys from
             // privKeyQueue instead of random keys.
             Internal.crypto.createKeyPair = function (privKey) {
@@ -312,8 +338,8 @@ tv.forEach(function (test) {
                 } else {
                     const privKey = privKeyQueue.shift()
                     return Internal.crypto.createKeyPair(privKey).then(function (keyPair) {
-                        const a = btoa(utils.toString(keyPair.privKey))
-                        const b = btoa(utils.toString(privKey))
+                        // const a = btoa(utils.toString(keyPair.privKey))
+                        // const b = btoa(utils.toString(privKey))
                         if (utils.toString(keyPair.privKey) != utils.toString(privKey))
                             throw new Error('Failed to rederive private key!')
                         else return keyPair
@@ -322,7 +348,7 @@ tv.forEach(function (test) {
             }
         })
 
-        afterAll(function () {
+        afterEach(function () {
             Internal.crypto.createKeyPair = origCreateKeyPair
             if (privKeyQueue.length != 0) {
                 throw new Error('Leftover private keys')
