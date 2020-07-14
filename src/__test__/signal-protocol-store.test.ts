@@ -170,7 +170,7 @@ describe('SignalProtocolStore', function () {
         const testRecord = 'an opaque string'
 
         describe('storeSession', function () {
-            // TODO: this used to store sessions encoded as array buffers, but the SDK
+            // ...this used to store sessions encoded as array buffers, but the SDK
             // always stores them as strings. Changed the tests accordingly
             test('stores sessions -- see comment in code', async () => {
                 await store.storeSession(address.toString(), testRecord)
