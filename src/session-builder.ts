@@ -81,7 +81,7 @@ export class SessionBuilder {
 
     initSession = async (
         isInitiator: boolean,
-        ourEphemeralKey: KeyPairType<ArrayBuffer>,
+        ourEphemeralKey: KeyPairType<ArrayBuffer> | undefined,
         ourSignedKey: KeyPairType<ArrayBuffer> | undefined,
         theirIdentityPubKey: ArrayBuffer,
         theirEphemeralPubKey: ArrayBuffer | undefined,
@@ -147,7 +147,7 @@ export class SessionBuilder {
             sharedSecret.set(new Uint8Array(ecRes4), 32 * 4)
         }
 
-        const masterKey = await Internal.HKDF(sharedSecret.buffer, new ArrayBuffer(32), 'WhisperText')
+        const masterKey = await Internal.HKDF(uint8ArrayToArrayBuffer(sharedSecret), new ArrayBuffer(32), 'WhisperText')
 
         const session: SessionType = {
             registrationId: registrationId,
@@ -167,6 +167,9 @@ export class SessionBuilder {
         // If we're initiating we go ahead and set our first sending ephemeral key now,
         // otherwise we figure it out when we first maybeStepRatchet with the remote's ephemeral key
         if (isInitiator) {
+            if (!ourEphemeralKey) {
+                throw new Error(`ourEphemeralKey required when isInitiator === true`)
+            }
             session.indexInfo.baseKey = ourEphemeralKey.pubKey
             session.indexInfo.baseKeyType = BaseKeyType.OURS
             const ourSendingEphemeralKey = await Internal.crypto.createKeyPair()
@@ -200,7 +203,7 @@ export class SessionBuilder {
         const masterKey = await Internal.HKDF(sharedSecret, rootKey, 'WhisperRatchet')
 
         session.chains[ephPubKey] = {
-            messageKeys: [],
+            messageKeys: {},
             chainKey: { counter: -1, key: masterKey[1] },
             chainType: ChainType.SENDING,
         }
@@ -255,9 +258,9 @@ export class SessionBuilder {
         if (message.preKeyId && !preKeyPair) {
             console.log('Invalid prekey id', message.preKeyId)
         }
-        if (!preKeyPair) {
-            throw new Error(`preKeyPair is missing`)
-        }
+        // if (!preKeyPair) {
+        //     throw new Error(`preKeyPair is missing`)
+        // }
 
         const new_session = await this.initSession(
             false,
@@ -269,7 +272,7 @@ export class SessionBuilder {
             message.registrationId
         )
         record.updateSessionState(new_session)
-        await this.storage.saveIdentity(this.remoteAddress.toString(), message.identityKey.buffer)
+        await this.storage.saveIdentity(this.remoteAddress.toString(), uint8ArrayToArrayBuffer(message.identityKey))
 
         return message.preKeyId
     }

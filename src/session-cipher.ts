@@ -62,7 +62,7 @@ export class SessionCipher {
             'WhisperMessageKeys'
         )
 
-        chain.messageKeys.splice(chain.chainKey.counter, 1)
+        delete chain.messageKeys[chain.chainKey.counter]
         msg.counter = chain.chainKey.counter
         msg.previousCounter = session.currentRatchet.previousCounter
 
@@ -89,10 +89,9 @@ export class SessionCipher {
             Direction.SENDING
         )
         if (!trusted) {
-            if (!trusted) {
-                throw new Error('Identity key changed')
-            }
+            throw new Error('Identity key changed')
         }
+
         this.storage.saveIdentity(this.remoteAddress.toString(), session.indexInfo.remoteIdentityKey)
         record.updateSessionState(session)
         await this.storage.storeSession(address, record.serialize())
@@ -209,7 +208,7 @@ export class SessionCipher {
             ephemeralPublicKey = remoteKey
         }
         session.chains[base64.fromByteArray(new Uint8Array(ephemeralPublicKey))] = {
-            messageKeys: [],
+            messageKeys: {},
             chainKey: { counter: -1, key: masterKey[1] },
             chainType: sending ? ChainType.SENDING : ChainType.RECEIVING,
         }

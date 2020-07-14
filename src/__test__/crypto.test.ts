@@ -1,5 +1,6 @@
 import { hexToArrayBuffer, assertEqualArrayBuffers } from '../__test-utils__/utils'
 import * as Internal from '../internal'
+import { uint8ArrayToArrayBuffer } from '../helpers'
 
 const alice_bytes = hexToArrayBuffer('77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a')
 const alice_priv = hexToArrayBuffer('70076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c6a')
@@ -145,7 +146,7 @@ describe('Crypto', function () {
             for (let i = 0; i < 10; i++) info[i] = 240 + i
 
             return Internal.crypto
-                .HKDF(IKM.buffer, salt.buffer, info.buffer)
+                .HKDF(uint8ArrayToArrayBuffer(IKM), uint8ArrayToArrayBuffer(salt), uint8ArrayToArrayBuffer(info))
                 .then(function (OKM) {
                     assertEqualArrayBuffers(OKM[0], T1)
                     assertEqualArrayBuffers(OKM[1].slice(0, 10), T2)

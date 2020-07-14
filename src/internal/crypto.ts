@@ -15,7 +15,7 @@ export class Crypto {
     getRandomBytes(n: number): ArrayBuffer {
         const array = new Uint8Array(n)
         webcrypto.getRandomValues(array)
-        return array.buffer
+        return util.uint8ArrayToArrayBuffer(array)
     }
 
     async encrypt(key: ArrayBuffer, data: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer> {
@@ -38,7 +38,12 @@ export class Crypto {
             ['sign']
         )
 
-        return webcrypto.subtle.sign({ name: 'HMAC', hash: 'SHA-256' }, impkey, data)
+        try {
+            return webcrypto.subtle.sign({ name: 'HMAC', hash: 'SHA-256' }, impkey, data)
+        } catch (e) {
+            console.log({ e, data, impkey })
+            throw e
+        }
     }
     async hash(data: ArrayBuffer): Promise<ArrayBuffer> {
         return webcrypto.subtle.digest({ name: 'SHA-512' }, data)
@@ -47,6 +52,9 @@ export class Crypto {
     async HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: ArrayBuffer): Promise<ArrayBuffer[]> {
         // Specific implementation of RFC 5869 that only returns the first 3 32-byte chunks
         // TODO: We dont always need the third chunk, we might skip it
+        if (typeof info === 'string') {
+            throw new Error(`HKDF info was a string`)
+        }
         const PRK = await Internal.crypto.sign(salt, input)
         const infoBuffer = new ArrayBuffer(info.byteLength + 1 + 32)
         const infoArray = new Uint8Array(infoBuffer)

@@ -45,7 +45,7 @@ export interface OldRatchetInfo<T> {
 export interface Chain<T> {
     chainType: ChainType
     chainKey: { key: T; counter: number }
-    messageKeys: T[]
+    messageKeys: { [key: number]: T }
 }
 
 export interface PendingPreKey<T> {
