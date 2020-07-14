@@ -2,7 +2,7 @@
   "transform": {
     "^.+\\.(t|j)sx?$": "ts-jest"
   },
-  "testRegex": "(src/__tests__/.*\\.test\\..*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+  "testRegex": "(src/__test__/.*\\.test\\..*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
   "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
   "testEnvironment": "./src/__test-utils__/custom-jest-environment.js"
 }
