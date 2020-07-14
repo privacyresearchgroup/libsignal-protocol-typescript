@@ -62,7 +62,7 @@ export class SessionCipher {
             'WhisperMessageKeys'
         )
 
-        chain.messageKeys.splice(chain.chainKey.counter, 1)
+        delete chain.messageKeys[chain.chainKey.counter]
         msg.counter = chain.chainKey.counter
         msg.previousCounter = session.currentRatchet.previousCounter
 
@@ -209,7 +209,7 @@ export class SessionCipher {
             ephemeralPublicKey = remoteKey
         }
         session.chains[base64.fromByteArray(new Uint8Array(ephemeralPublicKey))] = {
-            messageKeys: [],
+            messageKeys: {},
             chainKey: { counter: -1, key: masterKey[1] },
             chainType: sending ? ChainType.SENDING : ChainType.RECEIVING,
         }

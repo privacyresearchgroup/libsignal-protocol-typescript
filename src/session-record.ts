@@ -267,26 +267,34 @@ export function pendingPreKeyArrayBufferToString(ppk: PendingPreKey<ArrayBuffer>
 export function chainStringToArrayBuffer(c: Chain<string>): Chain<ArrayBuffer> {
     const { chainType, chainKey, messageKeys } = c
     const { key, counter } = chainKey
+    const newMessageKeys: { [k: number]: ArrayBuffer } = {}
+    for (const k of Object.keys(messageKeys)) {
+        newMessageKeys[k] = toAB(messageKeys[k])
+    }
     return {
         chainType,
         chainKey: {
             key: util.uint8ArrayToArrayBuffer(base64.toByteArray(key)),
             counter,
         },
-        messageKeys: messageKeys.map(toAB),
+        messageKeys: newMessageKeys,
     }
 }
 
 export function chainArrayBufferToString(c: Chain<ArrayBuffer>): Chain<string> {
     const { chainType, chainKey, messageKeys } = c
     const { key, counter } = chainKey
+    const newMessageKeys: { [k: number]: string } = {}
+    for (const k of Object.keys(messageKeys)) {
+        newMessageKeys[k] = abToS(messageKeys[k])
+    }
     return {
         chainType,
         chainKey: {
             key: abToS(key),
             counter,
         },
-        messageKeys: messageKeys.map(abToS),
+        messageKeys: newMessageKeys,
     }
 }
 

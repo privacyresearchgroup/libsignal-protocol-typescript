@@ -200,7 +200,7 @@ export class SessionBuilder {
         const masterKey = await Internal.HKDF(sharedSecret, rootKey, 'WhisperRatchet')
 
         session.chains[ephPubKey] = {
-            messageKeys: [],
+            messageKeys: {},
             chainKey: { counter: -1, key: masterKey[1] },
             chainType: ChainType.SENDING,
         }
