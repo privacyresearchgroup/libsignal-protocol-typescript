@@ -24,7 +24,7 @@ export class SessionBuilder {
             Direction.SENDING
         )
         if (!trusted) {
-            throw new Error(`Identity key changed`)
+            throw new Error('Identity key changed')
         }
 
         // This will throw if invalid
@@ -39,9 +39,9 @@ export class SessionBuilder {
         const baseKey = await Internal.crypto.createKeyPair()
 
         const devicePreKey = device.preKey?.publicKey
-        if (!devicePreKey) {
-            throw new Error(`device preKey missing`)
-        }
+        //  if (!devicePreKey) {
+        //     throw new Error(`device preKey missing`)
+        //}
 
         console.log(`initSession`)
         const session = await this.initSession(
@@ -84,7 +84,7 @@ export class SessionBuilder {
         ourEphemeralKey: KeyPairType<ArrayBuffer>,
         ourSignedKey: KeyPairType<ArrayBuffer> | undefined,
         theirIdentityPubKey: ArrayBuffer,
-        theirEphemeralPubKey: ArrayBuffer,
+        theirEphemeralPubKey: ArrayBuffer | undefined,
         theirSignedPubKey: ArrayBuffer | undefined,
         registrationId: number
     ): Promise<SessionType> => {
