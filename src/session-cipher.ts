@@ -89,10 +89,9 @@ export class SessionCipher {
             Direction.SENDING
         )
         if (!trusted) {
-            if (!trusted) {
-                throw new Error('Identity key changed')
-            }
+            throw new Error('Identity key changed')
         }
+
         this.storage.saveIdentity(this.remoteAddress.toString(), session.indexInfo.remoteIdentityKey)
         record.updateSessionState(session)
         await this.storage.storeSession(address, record.serialize())
