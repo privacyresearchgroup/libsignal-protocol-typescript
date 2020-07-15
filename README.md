@@ -79,9 +79,9 @@ At install time, a libsignal client needs to generate its identity keys,
 registration id, and prekeys.
 
 ```js
-var KeyHelper = libsignal.KeyHelper
+const KeyHelper = libsignal.KeyHelper
 
-var registrationId = KeyHelper.generateRegistrationId()
+const registrationId = KeyHelper.generateRegistrationId()
 // Store registrationId somewhere durable and safe.
 
 KeyHelper.generateIdentityKeyPair().then(function (identityKeyPair) {
