@@ -2,7 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SessionCipher, MessageType } from '../session-cipher'
 import { SessionBuilder } from '../session-builder'
-import { generateIdentity, generatePreKeyBundle } from '../__test-utils__/utils'
+import {
+    generateIdentity,
+    generatePreKeyBundle,
+    assertEqualArrayBuffers,
+    assertEqualUint8Arrays,
+} from '../__test-utils__/utils'
 
 import { SignalProtocolStore } from './storage-type'
 import { SignalProtocolAddress } from '../signal-protocol-address'
@@ -16,10 +21,11 @@ import {
     PushMessageContent,
     IncomingPushMessageSignal_Type,
     PushMessageContent_Flags,
+    WhisperMessage,
 } from '@privacyresearch/libsignal-protocol-protobuf-ts'
 
 //import { KeyPairType } from '../types'
-const tv = TestVectors() // .slice(0, 2)
+const tv = TestVectors().slice(0, 1)
 // TODO: import this when Rolfe gets it right
 export enum ChainType {
     SENDING = 1,
@@ -128,7 +134,7 @@ function getPaddedMessageLength(messageLength: number): number {
 
 function pad(plaintext: ArrayBuffer): ArrayBuffer {
     const paddedPlaintext = new Uint8Array(getPaddedMessageLength(plaintext.byteLength + 1) - 1)
-    paddedPlaintext.fill(0)
+
     paddedPlaintext.set(new Uint8Array(plaintext))
     paddedPlaintext[plaintext.byteLength] = 0x80
     return utils.uint8ArrayToArrayBuffer(paddedPlaintext)
@@ -180,8 +186,9 @@ async function doReceiveStep(
                 return false
             }
         }
+
         return (
-            content.body == data.expectedSmsText
+            content.body === data.expectedSmsText
             //.catch(function checkException(e) {
             //   if (data.expectException) {
             //       return true
@@ -251,7 +258,8 @@ async function doSendStep(
         const sessionCipher = new SessionCipher(store, address)
         console.log(`about to encrypt`, { proto })
         const msg = await sessionCipher.encrypt(pad(utils.toArrayBuffer(proto.body)!))
-        console.log({ msg })
+
+        const msgbody = new Uint8Array(utils.toArrayBuffer(msg.body!.substring(1))!)
         //XXX: This should be all we do: isEqual(data.expectedCiphertext, encryptedMsg, false);
         let res: boolean
         if (msg.type === 1) {
@@ -262,7 +270,7 @@ async function doSendStep(
             }
             console.log({
                 expectedCiphertext: data.expectedCiphertext,
-                msg: utils.toArrayBuffer(msg.body.substring(1)),
+                msg: msgbody,
             })
 
             //        const expected = Internal.protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
@@ -270,9 +278,27 @@ async function doSendStep(
             // const parsedEncMsg = PreKeyWhisperMessage.decode(
             //     new Uint8Array(utils.toArrayBuffer(msg.body.substring(1))!)
             // )
-            const pkwmsg = PreKeyWhisperMessage.decode(new Uint8Array(data.expectedCiphertext).slice(1))
+            const ourpkwmsg = PreKeyWhisperMessage.decode(msgbody)
+            const datapkwmsg = PreKeyWhisperMessage.decode(new Uint8Array(data.expectedCiphertext).slice(1))
+
+            // console.log({ datapkwmsg, ourpkwmsg })
+            assertEqualUint8Arrays(datapkwmsg.baseKey, ourpkwmsg.baseKey)
+            assertEqualUint8Arrays(datapkwmsg.identityKey, ourpkwmsg.identityKey)
+            expect(datapkwmsg.preKeyId).toStrictEqual(ourpkwmsg.preKeyId)
+            expect(datapkwmsg.signedPreKeyId).toStrictEqual(ourpkwmsg.signedPreKeyId)
+            // assertEqualUint8Arrays(datapkwmsg.message, ourpkwmsg.message)
+
+            const ourencrypted = WhisperMessage.decode(ourpkwmsg.message.slice(1, ourpkwmsg.message.length - 8))
+            const dataencrypted = WhisperMessage.decode(datapkwmsg.message.slice(1, datapkwmsg.message.length - 8))
+
+            console.log({ ourencrypted, dataencrypted })
+            expect(ourencrypted.counter).toBe(dataencrypted.counter)
+            expect(ourencrypted.previousCounter).toBe(dataencrypted.previousCounter)
+            assertEqualUint8Arrays(ourencrypted.ephemeralKey, dataencrypted.ephemeralKey)
+            assertEqualUint8Arrays(ourencrypted.ciphertext, dataencrypted.ciphertext)
+
             // console.log({ pkwmsg, parsedEncMsg })
-            const expected = PreKeyWhisperMessage.encode(pkwmsg).finish()
+            const expected = PreKeyWhisperMessage.encode(datapkwmsg).finish()
             console.log({
                 expected: utils.uint8ArrayToArrayBuffer(expected),
                 msg: utils.toArrayBuffer(msg.body.substring(1)),
@@ -326,7 +352,7 @@ tv.forEach(function (test) {
         const privKeyQueue = []
         const origCreateKeyPair = Internal.crypto.createKeyPair.bind(Internal.crypto)
 
-        beforeEach(function () {
+        beforeAll(function () {
             // Shim createKeyPair to return predetermined keys from
             // privKeyQueue instead of random keys.
             Internal.crypto.createKeyPair = function (privKey) {
@@ -348,34 +374,34 @@ tv.forEach(function (test) {
             }
         })
 
-        afterEach(function () {
+        afterAll(function () {
             Internal.crypto.createKeyPair = origCreateKeyPair
             if (privKeyQueue.length != 0) {
                 throw new Error('Leftover private keys')
             }
         })
 
-        function describeStep(step) {
-            const direction = step[0]
-            const data = step[1]
-            if (direction === 'receiveMessage') {
-                if (data.expectTerminateSession) {
-                    return 'receive end session message'
-                } else if (data.type === 3) {
-                    return 'receive prekey message ' + data.expectedSmsText
-                } else {
-                    return 'receive message ' + data.expectedSmsText
-                }
-            } else if (direction === 'sendMessage') {
-                if (data.endSession) {
-                    return 'send end session message'
-                } else if (data.ourIdentityKey) {
-                    return 'send prekey message ' + data.smsText
-                } else {
-                    return 'send message ' + data.smsText
-                }
-            }
-        }
+        // function describeStep(step) {
+        //     const direction = step[0]
+        //     const data = step[1]
+        //     if (direction === 'receiveMessage') {
+        //         if (data.expectTerminateSession) {
+        //             return 'receive end session message'
+        //         } else if (data.type === 3) {
+        //             return 'receive prekey message ' + data.expectedSmsText
+        //         } else {
+        //             return 'receive message ' + data.expectedSmsText
+        //         }
+        //     } else if (direction === 'sendMessage') {
+        //         if (data.endSession) {
+        //             return 'send end session message'
+        //         } else if (data.ourIdentityKey) {
+        //             return 'send prekey message ' + data.smsText
+        //         } else {
+        //             return 'send message ' + data.smsText
+        //         }
+        //     }
+        // }
 
         const store = new SignalProtocolStore()
         const address = SignalProtocolAddress.fromString('SNOWDEN.1')
@@ -413,53 +439,45 @@ describe('key changes', function () {
     const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
     //TODO should this be beforeAll or beforeEach?
-    beforeEach(function (done) {
+    beforeAll(function (done) {
         Promise.all([aliceStore, bobStore].map(generateIdentity))
             .then(function () {
                 return generatePreKeyBundle(bobStore, bobPreKeyId, bobSignedKeyId)
             })
-            .then(function (preKeyBundle) {
+            .then((preKeyBundle) => {
                 const builder = new SessionBuilder(aliceStore, BOB_ADDRESS)
-                return (
-                    builder
-                        .processPreKey(preKeyBundle)
-                        .then(function () {
-                            const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
-                            return aliceSessionCipher.encrypt(originalMessage)
-                        })
-                        .then(function (ciphertext) {
-                            return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body!, 'binary')
-                        })
-                        .then(function () {
-                            done()
-                        })
-                        // })
-                        .catch(done)
-                )
+                return builder
+                    .processPreKey(preKeyBundle)
+                    .then(function () {
+                        const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
+                        return aliceSessionCipher.encrypt(originalMessage)
+                    })
+                    .then(function (ciphertext) {
+                        return bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body!, 'binary')
+                    })
+                    .then(function () {
+                        done()
+                    })
+                    .catch(done)
             })
     })
 
     describe("When bob's identity changes", function () {
         let messageFromBob: MessageType
-        beforeEach(async () => {
+        beforeAll(async () => {
             const ciphertext = await bobSessionCipher.encrypt(originalMessage)
             messageFromBob = ciphertext
             await generateIdentity(bobStore)
-            const idK = <KeyPairType>bobStore.get('identityKey', undefined)
+            const idK = bobStore.get('identityKey', undefined) as KeyPairType
             const pubK = idK.pubKey
-            return aliceStore.saveIdentity(BOB_ADDRESS.toString(), pubK)
+            await aliceStore.saveIdentity(BOB_ADDRESS.toString(), pubK)
         })
 
         test('alice cannot encrypt with the old session', async () => {
             const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
             await expect(async () => {
-                //
                 await aliceSessionCipher.encrypt(originalMessage)
             }).rejects.toThrow('Identity key changed')
-            // .catch(function (e) {
-            //     assert.strictEqual(e.message, 'Identity key changed')
-            // })
-            // .then(done, done)
         })
 
         test('alice cannot decrypt from the old session', async () => {
