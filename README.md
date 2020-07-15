@@ -1,6 +1,6 @@
 # Signal Protocol Typescript Library (libsignal-protocol-typescript)
 
-Signal Protocol Typescript implementaiton based on [libsignal-protocol-javscript](https://github.com/signalapp/libsignal-protocol-javascript).
+Signal Protocol Typescript implementation based on [libsignal-protocol-javscript](https://github.com/signalapp/libsignal-protocol-javascript).
 
 ## ROLFE-TODO
 
