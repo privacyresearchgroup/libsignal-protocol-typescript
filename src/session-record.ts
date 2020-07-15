@@ -11,6 +11,48 @@ const OLD_RATCHETS_MAX_LENGTH = 10
 const SESSION_RECORD_VERSION = 'v1'
 
 export class SessionRecord {
+    static migrations = [
+        {
+            version: 'v1',
+            migrate: function migrateV1(data) {
+                const sessions = data.sessions
+                let key
+                if (data.registrationId) {
+                    for (key in sessions) {
+                        if (!sessions[key].registrationId) {
+                            sessions[key].registrationId = data.registrationId
+                        }
+                    }
+                } else {
+                    for (key in sessions) {
+                        if (sessions[key].indexInfo.closed === -1) {
+                            console.log(
+                                'V1 session storage migration error: registrationId',
+                                data.registrationId,
+                                'for open session version',
+                                data.version
+                            )
+                        }
+                    }
+                }
+            },
+        },
+    ]
+
+    static migrate(data): void {
+        let run = data.version === undefined
+        for (let i = 0; i < SessionRecord.migrations.length; ++i) {
+            if (run) {
+                SessionRecord.migrations[i].migrate(data)
+            } else if (SessionRecord.migrations[i].version === data.version) {
+                run = true
+            }
+        }
+        if (!run) {
+            throw new Error('Error migrating SessionRecord')
+        }
+    }
+
     registrationId?: number
     sessions: { [k: string]: SessionType } = {}
     version = SESSION_RECORD_VERSION
@@ -21,7 +63,7 @@ export class SessionRecord {
     static deserialize(serialized: string): SessionRecord {
         const data = JSON.parse(serialized)
         if (data.version !== SESSION_RECORD_VERSION) {
-            // migrate(data)
+            SessionRecord.migrate(data)
         }
 
         const record = new SessionRecord()
