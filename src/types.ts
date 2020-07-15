@@ -68,14 +68,19 @@ export interface StorageType {
 
     // TODO: direction is unused in test code but probably should be required
     isTrustedIdentity: (identifier: string, identityKey: ArrayBuffer, direction?: Direction) => Promise<boolean>
+    saveIdentity: (encodedAddress: string, publicKey: ArrayBuffer, nonblockingApproval?: boolean) => Promise<boolean>
+
     loadPreKey: (encodedAddress: string | number) => Promise<KeyPairType | undefined>
+    storePreKey: (keyId: string, keyPair: KeyPairType) => Promise<void>
+    removePreKey: (keyId: number | string) => Promise<void>
+
+    storeSession: (encodedAddress: string, record: SessionRecordType) => Promise<void>
     loadSession: (encodedAddress: string) => Promise<SessionRecordType | undefined>
 
     // TODO: should this really return a signed prekey?
     loadSignedPreKey: (keyId: number) => Promise<KeyPairType | undefined>
-    removePreKey: (keyId: number | string) => Promise<void>
-    saveIdentity: (encodedAddress: string, publicKey: ArrayBuffer, nonblockingApproval?: boolean) => Promise<boolean>
-    storeSession: (encodedAddress: string, record: SessionRecordType) => Promise<void>
+    storeSignedPreKey: (keyId: number, keyPair: KeyPairType) => Promise<void>
+    removeSignedPreKey: (keyId: number) => Promise<void>
 }
 
 export interface CurveType {

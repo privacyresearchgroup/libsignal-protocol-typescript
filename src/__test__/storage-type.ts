@@ -65,7 +65,7 @@ export class SignalProtocolStore implements StorageType {
         if (isKeyPairType(kp) || typeof kp === 'undefined') {
             return kp
         }
-        throw new Error('ITem stored as identity key of unknown type.')
+        throw new Error('Item stored as identity key of unknown type.')
     }
 
     async getLocalRegistrationId(): Promise<number | undefined> {
@@ -92,7 +92,7 @@ export class SignalProtocolStore implements StorageType {
         }
         return Promise.resolve(toString(identityKey) === toString(trusted as Stringable))
     }
-    async loadPreKey(keyId: number | string): Promise<KeyPairType | undefined> {
+    async loadPreKey(keyId: string | number): Promise<KeyPairType | undefined> {
         let res = this.get('25519KeypreKey' + keyId, undefined)
         if (isKeyPairType(res)) {
             res = { pubKey: res.pubKey, privKey: res.privKey }
