@@ -16,6 +16,13 @@ export function assertEqualArrayBuffers(ab1: ArrayBuffer, ab2: ArrayBuffer): voi
     }
 }
 
+export function assertEqualUint8Arrays(a1: Uint8Array, a2: Uint8Array): void {
+    expect(a1.length).toBe(a2.length)
+    for (let i = 0; i < a1.length; ++i) {
+        expect(a1[i]).toBe(a2[i])
+    }
+}
+
 export async function generateIdentity(store) {
     return Promise.all([KeyHelper.generateIdentityKeyPair(), KeyHelper.generateRegistrationId()]).then(function (
         result
