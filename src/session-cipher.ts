@@ -66,7 +66,6 @@ export class SessionCipher {
         msg.counter = chain.chainKey.counter
         msg.previousCounter = session.currentRatchet.previousCounter
 
-        console.log(`doEncryptJob`, { buffer, keys })
         const ciphertext = await Internal.crypto.encrypt(keys[0], buffer, keys[2].slice(0, 16))
         msg.ciphertext = new Uint8Array(ciphertext)
         const encodedMsg = WhisperMessage.encode(msg).finish()

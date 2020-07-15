@@ -35,7 +35,6 @@ export class SessionBuilder {
             device.signedPreKey.signature
         )
 
-        console.log(`create baseKey`)
         const baseKey = await Internal.crypto.createKeyPair()
 
         const devicePreKey = device.preKey?.publicKey
@@ -43,7 +42,6 @@ export class SessionBuilder {
         //     throw new Error(`device preKey missing`)
         //}
 
-        console.log(`initSession`)
         const session = await this.initSession(
             true,
             baseKey,
@@ -174,10 +172,7 @@ export class SessionBuilder {
             session.indexInfo.baseKeyType = BaseKeyType.OURS
             const ourSendingEphemeralKey = await Internal.crypto.createKeyPair()
             session.currentRatchet.ephemeralKeyPair = ourSendingEphemeralKey
-            console.log(`initiating session`, {
-                ourSendingEphemeralKey,
-                typeofkey: typeof ourSendingEphemeralKey.pubKey,
-            })
+
             await this.calculateSendingRatchet(session, theirSignedPubKey)
         } else {
             session.indexInfo.baseKey = theirEphemeralPubKey
