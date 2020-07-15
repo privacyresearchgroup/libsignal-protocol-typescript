@@ -27,7 +27,6 @@ const registrationId = 1337
 const address = new SignalProtocolAddress('foo', 1)
 const sessionCipher = new SessionCipher(store, address.toString())
 
-//before(function(done) {
 const record = new SessionRecord(registrationId)
 const session = {
     registrationId: registrationId,
@@ -99,7 +98,7 @@ async function setupReceiveStep(
     }
 
     const keyPair = await Internal.crypto.createKeyPair(data.ourIdentityKey)
-    await store.put('identityKey', keyPair)
+    store.put('identityKey', keyPair)
     const signedKeyPair = await Internal.crypto.createKeyPair(data.ourSignedPreKey)
     await store.storeSignedPreKey(data.signedPreKeyId, signedKeyPair)
     if (data.ourPreKey !== undefined) {
@@ -127,7 +126,7 @@ function pad(plaintext: ArrayBuffer): ArrayBuffer {
 
 function unpad(paddedPlaintext: Uint8Array): Uint8Array {
     const ppt = new Uint8Array(paddedPlaintext)
-    //paddedPlaintext = new Uint8Array(paddedPlaintext)
+
     for (let i = ppt.length - 1; i >= 0; i--) {
         if (ppt[i] == 0x80) {
             const plaintext = new Uint8Array(i)
@@ -151,11 +150,9 @@ async function doReceiveStep(
 
     try {
         let plaintext: Uint8Array
-        //    if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.CIPHERTEXT) {
         if (data.type == IncomingPushMessageSignal_Type.CIPHERTEXT) {
             const dWS: Uint8Array = new Uint8Array(await sessionCipher.decryptWhisperMessage(data.message))
             plaintext = await unpad(dWS)
-            //    } else if (data.type == textsecure.protobuf.IncomingPushMessageSignal.Type.PREKEY_BUNDLE) {
         } else if (data.type == IncomingPushMessageSignal_Type.PREKEY_BUNDLE) {
             const dPKWS: Uint8Array = new Uint8Array(await sessionCipher.decryptPreKeyWhisperMessage(data.message))
             plaintext = await unpad(dPKWS)
@@ -243,7 +240,6 @@ async function doSendStep(
         if (data.endSession) {
             console.log(`END SESSION PROTO`, { proto, pt })
         }
-        // const msg = await sessionCipher.encrypt(pad(utils.toArrayBuffer(proto.body)!))
         const msg = await sessionCipher.encrypt(pad(utils.uint8ArrayToArrayBuffer(correctedPt)))
 
         const msgbody = new Uint8Array(utils.toArrayBuffer(msg.body!.substring(1))!)
@@ -320,13 +316,8 @@ function getDescription(step: { [k: string]: any }): string {
     return ''
 }
 
-//TestVectors.forEach(function (test) {
-
 tv.forEach(function (test) {
     describe(test.name, () => {
-        // function (done) {
-        //  this.timeout(20000)
-
         const privKeyQueue: ArrayBuffer[] = []
         const origCreateKeyPair = Internal.crypto.createKeyPair.bind(Internal.crypto)
 
@@ -342,8 +333,6 @@ tv.forEach(function (test) {
                 } else {
                     const privKey = privKeyQueue.shift()
                     return Internal.crypto.createKeyPair(privKey).then(function (keyPair) {
-                        // const a = btoa(utils.toString(keyPair.privKey))
-                        // const b = btoa(utils.toString(privKey))
                         if (utils.toString(keyPair.privKey) != utils.toString(privKey))
                             throw new Error('Failed to rederive private key!')
                         else return keyPair
@@ -359,33 +348,16 @@ tv.forEach(function (test) {
             }
         })
 
-        // function describeStep(step) {
-        //     const direction = step[0]
-        //     const data = step[1]
-        //     if (direction === 'receiveMessage') {
-        //         if (data.expectTerminateSession) {
-        //             return 'receive end session message'
-        //         } else if (data.type === 3) {
-        //             return 'receive prekey message ' + data.expectedSmsText
-        //         } else {
-        //             return 'receive message ' + data.expectedSmsText
-        //         }
-        //     } else if (direction === 'sendMessage') {
-        //         if (data.endSession) {
-        //             return 'send end session message'
-        //         } else if (data.ourIdentityKey) {
-        //             return 'send prekey message ' + data.smsText
-        //         } else {
-        //             return 'send message ' + data.smsText
-        //         }
-        //     }
-        // }
-
         const store = new SignalProtocolStore()
         const address = SignalProtocolAddress.fromString('SNOWDEN.1')
         test.vectors.forEach(function (step) {
             it(getDescription(step), async () => {
-                let doStep
+                let doStep: (
+                    store: SignalProtocolStore,
+                    data: Record<string, any>,
+                    q: ArrayBuffer[],
+                    address: SignalProtocolAddress
+                ) => Promise<boolean>
 
                 if (step[0] === 'receiveMessage') {
                     doStep = doReceiveStep
@@ -411,8 +383,6 @@ describe('key changes', function () {
     const bobStore = new SignalProtocolStore()
     const bobPreKeyId = 1337
     const bobSignedKeyId = 1
-
-    //var Curve = libsignal.Curve
 
     const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
@@ -463,10 +433,6 @@ describe('key changes', function () {
             await expect(async () => {
                 await aliceSessionCipher.decryptWhisperMessage(<string>messageFromBob.body, 'binary')
             }).rejects.toThrow('Identity key changed')
-            //                .catch(function (e) {
-            //                   assert.strictEqual(e.message, 'Identity key changed')
-            //              })
-            //             .then(done, done)
         })
     })
 })
