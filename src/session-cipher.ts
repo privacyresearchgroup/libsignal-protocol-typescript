@@ -50,9 +50,9 @@ export class SessionCipher {
         if (!ourIdentityKey) {
             throw new Error(`cannot encrypt without identity key`)
         }
-        if (!myRegistrationId) {
-            throw new Error(`cannot encrypt without registration id`)
-        }
+        // if (!myRegistrationId) {
+        //     throw new Error(`cannot encrypt without registration id`)
+        // }
 
         const { session, chain } = await this.prepareChain(address, record, msg)
 
@@ -66,6 +66,7 @@ export class SessionCipher {
         msg.counter = chain.chainKey.counter
         msg.previousCounter = session.currentRatchet.previousCounter
 
+        console.log(`doEncryptJob`, { buffer, keys })
         const ciphertext = await Internal.crypto.encrypt(keys[0], buffer, keys[2].slice(0, 16))
         msg.ciphertext = new Uint8Array(ciphertext)
         const encodedMsg = WhisperMessage.encode(msg).finish()
@@ -99,7 +100,10 @@ export class SessionCipher {
         if (session.pendingPreKey !== undefined) {
             const preKeyMsg = PreKeyWhisperMessage.fromJSON({})
             preKeyMsg.identityKey = new Uint8Array(ourIdentityKey.pubKey)
-            preKeyMsg.registrationId = myRegistrationId
+
+            // TODO: for some test vectors there is no registration id. Why?
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            preKeyMsg.registrationId = myRegistrationId!
 
             preKeyMsg.baseKey = new Uint8Array(session.pendingPreKey.baseKey)
             if (session.pendingPreKey.preKeyId) {
@@ -143,15 +147,6 @@ export class SessionCipher {
 
         msg.ephemeralKey = new Uint8Array(session.currentRatchet.ephemeralKeyPair.pubKey)
         const searchKey = base64.fromByteArray(msg.ephemeralKey)
-        if (!searchKey) {
-            console.log({
-                pubkeyType: typeof session.currentRatchet.ephemeralKeyPair.pubKey,
-                searchKey,
-                ratchet: session.currentRatchet,
-                msg,
-            })
-            throw new Error(`Ephemeral key not found: ${searchKey}`)
-        }
 
         const chain = session.chains[searchKey]
         if (chain?.chainType === ChainType.RECEIVING) {
@@ -238,7 +233,6 @@ export class SessionCipher {
             const builder = new SessionBuilder(this.storage, this.remoteAddress)
 
             // isTrustedIdentity is called within processV3, no need to call it here
-            console.log(`processV3 while decrypting PreKeyWhisperMessage`, { record, preKeyProto })
             const preKeyId = await builder.processV3(record, preKeyProto)
             const session = record.getSessionByBaseKey(uint8ArrayToArrayBuffer(preKeyProto.baseKey))
             if (!session) {
@@ -396,7 +390,6 @@ export class SessionCipher {
             return Promise.resolve()
         }
 
-        console.log('New remote ephemeral key')
         const ratchet = session.currentRatchet
         if (!ratchet.ephemeralKeyPair) {
             throw new Error(`attempting to step reatchet without ephemeral key`)
