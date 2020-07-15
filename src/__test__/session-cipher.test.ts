@@ -2,12 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SessionCipher, MessageType } from '../session-cipher'
 import { SessionBuilder } from '../session-builder'
-import {
-    generateIdentity,
-    generatePreKeyBundle,
-    assertEqualArrayBuffers,
-    assertEqualUint8Arrays,
-} from '../__test-utils__/utils'
+import { generateIdentity, generatePreKeyBundle, assertEqualUint8Arrays } from '../__test-utils__/utils'
 
 import { SignalProtocolStore } from './storage-type'
 import { SignalProtocolAddress } from '../signal-protocol-address'
@@ -25,7 +20,7 @@ import {
 } from '@privacyresearch/libsignal-protocol-protobuf-ts'
 
 //import { KeyPairType } from '../types'
-const tv = TestVectors().slice(0, 1)
+const tv = TestVectors() // .slice(0, 1)
 // TODO: import this when Rolfe gets it right
 export enum ChainType {
     SENDING = 1,
@@ -205,7 +200,7 @@ async function doReceiveStep(
 async function setupSendStep(
     store: SignalProtocolStore,
     data: { [k: string]: any },
-    privKeyQueue: Array<any>
+    privKeyQueue: ArrayBuffer[]
 ): Promise<void> {
     if (data.registrationId !== undefined) {
         store.put('registrationId', data.registrationId)
@@ -256,8 +251,15 @@ async function doSendStep(
         }
 
         const sessionCipher = new SessionCipher(store, address)
-        console.log(`about to encrypt`, { proto })
-        const msg = await sessionCipher.encrypt(pad(utils.toArrayBuffer(proto.body)!))
+        const pt = PushMessageContent.encode(proto).finish()
+        const ptCorrectedLen = 2 + data.smsText?.length || 0
+        const correctedPt = proto.flags ? pt.slice(2) : pt.slice(0, ptCorrectedLen)
+
+        if (data.endSession) {
+            console.log(`END SESSION PROTO`, { proto, pt })
+        }
+        // const msg = await sessionCipher.encrypt(pad(utils.toArrayBuffer(proto.body)!))
+        const msg = await sessionCipher.encrypt(pad(utils.uint8ArrayToArrayBuffer(correctedPt)))
 
         const msgbody = new Uint8Array(utils.toArrayBuffer(msg.body!.substring(1))!)
         //XXX: This should be all we do: isEqual(data.expectedCiphertext, encryptedMsg, false);
@@ -291,18 +293,13 @@ async function doSendStep(
             const ourencrypted = WhisperMessage.decode(ourpkwmsg.message.slice(1, ourpkwmsg.message.length - 8))
             const dataencrypted = WhisperMessage.decode(datapkwmsg.message.slice(1, datapkwmsg.message.length - 8))
 
-            console.log({ ourencrypted, dataencrypted })
             expect(ourencrypted.counter).toBe(dataencrypted.counter)
             expect(ourencrypted.previousCounter).toBe(dataencrypted.previousCounter)
             assertEqualUint8Arrays(ourencrypted.ephemeralKey, dataencrypted.ephemeralKey)
             assertEqualUint8Arrays(ourencrypted.ciphertext, dataencrypted.ciphertext)
 
-            // console.log({ pkwmsg, parsedEncMsg })
             const expected = PreKeyWhisperMessage.encode(datapkwmsg).finish()
-            console.log({
-                expected: utils.uint8ArrayToArrayBuffer(expected),
-                msg: utils.toArrayBuffer(msg.body.substring(1)),
-            })
+
             if (!utils.isEqual(utils.uint8ArrayToArrayBuffer(expected), utils.toArrayBuffer(msg.body.substring(1)))) {
                 throw new Error('Result does not match expected ciphertext')
             }
@@ -344,12 +341,13 @@ function getDescription(step: { [k: string]: any }): string {
 }
 
 //TestVectors.forEach(function (test) {
+
 tv.forEach(function (test) {
     describe(test.name, () => {
         // function (done) {
         //  this.timeout(20000)
 
-        const privKeyQueue = []
+        const privKeyQueue: ArrayBuffer[] = []
         const origCreateKeyPair = Internal.crypto.createKeyPair.bind(Internal.crypto)
 
         beforeAll(function () {
