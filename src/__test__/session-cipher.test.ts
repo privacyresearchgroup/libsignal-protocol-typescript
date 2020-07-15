@@ -18,19 +18,9 @@ import {
     PushMessageContent_Flags,
     WhisperMessage,
 } from '@privacyresearch/libsignal-protocol-protobuf-ts'
+import { BaseKeyType } from '../session-types'
 
-//import { KeyPairType } from '../types'
-const tv = TestVectors() // .slice(0, 1)
-// TODO: import this when Rolfe gets it right
-export enum ChainType {
-    SENDING = 1,
-    RECEIVING = 2,
-}
-export enum BaseKeyType {
-    OURS = 1,
-    THEIRS = 2,
-}
-//--
+const tv = TestVectors()
 
 const store = new SignalProtocolStore()
 const registrationId = 1337
@@ -182,16 +172,11 @@ async function doReceiveStep(
             }
         }
 
-        return (
-            content.body === data.expectedSmsText
-            //.catch(function checkException(e) {
-            //   if (data.expectException) {
-            //       return true
-            //   }
-            //   throw e
-            // })
-        )
+        return content.body === data.expectedSmsText
     } catch (e) {
+        if (data.expectException) {
+            return true
+        }
         console.error(e)
         throw e
     }
@@ -262,7 +247,9 @@ async function doSendStep(
         const msg = await sessionCipher.encrypt(pad(utils.uint8ArrayToArrayBuffer(correctedPt)))
 
         const msgbody = new Uint8Array(utils.toArrayBuffer(msg.body!.substring(1))!)
-        //XXX: This should be all we do: isEqual(data.expectedCiphertext, encryptedMsg, false);
+        // NOTE: equivalent protobuf objects can have different binary encodings and still be accepted by our
+        // parsers to produce quivalent objects.  Instead of testing binary identity of the entire
+        // protobuf message, we parse it and check field-level identity.
         let res: boolean
         if (msg.type === 1) {
             res = utils.isEqual(data.expectedCiphertext, utils.toArrayBuffer(msg.body))
@@ -275,20 +262,13 @@ async function doSendStep(
                 msg: msgbody,
             })
 
-            //        const expected = Internal.protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
-            //const expected = protobuf.PreKeyWhisperMessage.decode(data.expectedCiphertext.slice(1)).encode()
-            // const parsedEncMsg = PreKeyWhisperMessage.decode(
-            //     new Uint8Array(utils.toArrayBuffer(msg.body.substring(1))!)
-            // )
             const ourpkwmsg = PreKeyWhisperMessage.decode(msgbody)
             const datapkwmsg = PreKeyWhisperMessage.decode(new Uint8Array(data.expectedCiphertext).slice(1))
 
-            // console.log({ datapkwmsg, ourpkwmsg })
             assertEqualUint8Arrays(datapkwmsg.baseKey, ourpkwmsg.baseKey)
             assertEqualUint8Arrays(datapkwmsg.identityKey, ourpkwmsg.identityKey)
             expect(datapkwmsg.preKeyId).toStrictEqual(ourpkwmsg.preKeyId)
             expect(datapkwmsg.signedPreKeyId).toStrictEqual(ourpkwmsg.signedPreKeyId)
-            // assertEqualUint8Arrays(datapkwmsg.message, ourpkwmsg.message)
 
             const ourencrypted = WhisperMessage.decode(ourpkwmsg.message.slice(1, ourpkwmsg.message.length - 8))
             const dataencrypted = WhisperMessage.decode(datapkwmsg.message.slice(1, datapkwmsg.message.length - 8))
