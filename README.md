@@ -2,7 +2,7 @@
 
 Signal Protocol Typescript implementaiton based on [libsignal-protocol-javscript](https://github.com/signalapp/libsignal-protocol-javascript).
 
-## TODO
+## ROLFE-TODO
 
 ```
 /lib                #
@@ -55,7 +55,7 @@ State is kept in the following places:
 - Session State. Clients will need to maintain the state of the sessions they
   have established.
 
-## Requirements
+## Requirements (ROLFE-TODO)
 
 This implementation currently depends on the presence of the following
 types/interfaces, which are available in most modern browsers.
@@ -67,9 +67,11 @@ types/interfaces, which are available in most modern browsers.
   - AES-CBC
   - HMAC SHA-256
 
-## Usage
+## Usage (ROLFE-TODO)
 
-Include `dist/libsignal-protocol.js` in your webpage.
+`yarn add xyz`
+or
+`npm install xyz`
 
 ### Install time
 
@@ -102,21 +104,21 @@ KeyHelper.generateSignedPreKey(identityKeyPair, keyId).then(function (signedPreK
 
 A libsignal client needs to implement a storage interface that will manage
 loading and storing of identity, prekeys, signed prekeys, and session state.
-See `test/InMemorySignalProtocolStore.js` for an example.
+See `src/__test__/storage-type.ts` for an example.
 
 Once this is implemented, building a session is fairly straightforward:
 
 ```js
-var store   = new MySignalProtocolStore();
-var address = new libsignal.SignalProtocolAddress(recipientId, deviceId);
+const store   = new MySignalProtocolStore();
+const address = new libsignal.SignalProtocolAddress(recipientId, deviceId);
 
 // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
-var sessionBuilder = new libsignal.SessionBuilder(store, address);
+const sessionBuilder = new libsignal.SessionBuilder(store, address);
 
 // Process a prekey fetched from the server. Returns a promise that resolves
 // once a session is created and saved in the store, or rejects if the
 // identityKey differs from a previously seen identity for this address.
-var promise = sessionBuilder.processPreKey({
+const promise = sessionBuilder.processPreKey({
     registrationId: <Number>,
     identityKey: <ArrayBuffer>,
     signedPreKey: {
@@ -145,8 +147,8 @@ Once you have a session established with an address, you can encrypt messages
 using SessionCipher.
 
 ```js
-var plaintext = 'Hello world'
-var sessionCipher = new libsignal.SessionCipher(store, address)
+const plaintext = 'Hello world'
+const sessionCipher = new libsignal.SessionCipher(store, address)
 sessionCipher.encrypt(plaintext).then(function (ciphertext) {
   // ciphertext -> { type: <Number>, body: <string> }
   handle(ciphertext.type, ciphertext.body)
@@ -158,8 +160,8 @@ sessionCipher.encrypt(plaintext).then(function (ciphertext) {
 Ciphertexts come in two flavors: WhisperMessage and PreKeyWhisperMessage.
 
 ```js
-var address = new SignalProtocolAddress(recipientId, deviceId)
-var sessionCipher = new SessionCipher(store, address)
+const address = new SignalProtocolAddress(recipientId, deviceId)
+const sessionCipher = new SessionCipher(store, address)
 
 // Decrypt a PreKeyWhisperMessage by first establishing a new session.
 // Returns a promise that resolves when the message is decrypted or
@@ -175,23 +177,14 @@ sessionCipher
   })
 
 // Decrypt a normal message using an existing session
-var sessionCipher = new SessionCipher(store, address)
+const sessionCipher = new SessionCipher(store, address)
 sessionCipher.decryptWhisperMessage(ciphertext).then(function (plaintext) {
   // handle plaintext ArrayBuffer
 })
 ```
 
-## Building
-
-To compile curve25519 from C souce files in `/native`, install
-[emscripten](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
-
-```
-grunt compile
-```
-
 ## License
 
-Copyright 2015-2018 Open Whisper Systems
+Copyright 2020 by Privacy Research, LLC
 
 Licensed under the GPLv3: http://www.gnu.org/licenses/gpl-3.0.html
