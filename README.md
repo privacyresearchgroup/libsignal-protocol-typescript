@@ -1,15 +1,13 @@
-# Signal Protocol Typescript Library
+# Signal Protocol Typescript Library (libsignal-protocol-typescript)
 
-Signal Protocol implementation for the browser based on
-[libsignal-protocol-java](https://github.com/signalapp/libsignal-protocol-java).
+Signal Protocol Typescript implementaiton based on [libsignal-protocol-javscript](https://github.com/signalapp/libsignal-protocol-javascript).
+
+## TODO
 
 ```
-/dist       # Distributables
-/build      # Intermediate build files
-/src        # JS source files
-/native     # C source files for curve25519
-/protos     # Protobuf definitions
-/test       # Tests
+/lib                #
+/src                # TS source files
+/src/__test__       # Tests
 ```
 
 ## Overview
