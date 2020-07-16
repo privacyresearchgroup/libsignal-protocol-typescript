@@ -69,9 +69,9 @@ types/interfaces, which are available in most modern browsers.
 
 ## Usage (ROLFE-TODO)
 
-`yarn add xyz`
+`yarn add @privacyresearch/libsignal-protocol-typescript`
 or
-`npm install xyz`
+`npm install @privacyresearch/libsignal-protocol-typescript`
 
 ### Install time
 
