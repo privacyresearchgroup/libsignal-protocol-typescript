@@ -63,124 +63,177 @@ types/interfaces, which are available in most modern browsers.
 - [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)
 - [TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
 - [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
-- [WebCrypto](https://developer.mozilla.org/en-US/docs/Web/API/Crypto) with support for:
-  - AES-CBC
-  - HMAC SHA-256
 
 ## Usage (ROLFE-TODO)
+The code samples below come almost directly from our [sample web application]().  Please have a look there to see how everything fits together.  Look at this project's unit tests too.
+### Add the SDK to your project
+We use [yarn](https://yarnpkg.com).
+```
+yarn add @privacyresearch/libsignal-protocol-typescript
+```
+But npm is good too:
+```
+npm install @privacyresearch/libsignal-protocol-typescript
+```
+Now you can import classes and functions from the library.  To make the examples below work,  the following import suffices:
+```
 
-`yarn add @privacyresearch/libsignal-protocol-typescript`
-or
-`npm install @privacyresearch/libsignal-protocol-typescript`
+import { 
+    KeyHelper, 
+    SignedPublicPreKeyType, 
+    SignalProtocolAddress, 
+    SessionBuilder, 
+    PreKeyType, 
+    SessionCipher, 
+    MessageType } 
+from '@privacyresearch/libsignal-protocol-typescript'
+```
+If you prefer to use a prefix like `libsignal` and keep a short import, you can do the following:
+```
+import * as libsignal from '@privacyresearch/libsignal-protocol-typescript'
+```
+#### Install time
 
-### Install time
-
-At install time, a libsignal client needs to generate its identity keys,
+At install time, a signal client needs to generate its identity keys,
 registration id, and prekeys.
 
-```js
-const KeyHelper = libsignal.KeyHelper
+A signal client also needs to implement a storage interface that will manage
+loading and storing of identity, prekeys, signed prekeys, and session state.
+See [`src/__test__/storage-type.ts`]() for an example.
 
-const registrationId = KeyHelper.generateRegistrationId()
-// Store registrationId somewhere durable and safe.
+Here is what setup might look like:
 
-KeyHelper.generateIdentityKeyPair().then(function (identityKeyPair) {
-  // keyPair -> { pubKey: ArrayBuffer, privKey: ArrayBuffer }
-  // Store identityKeyPair somewhere durable and safe.
-})
+```ts
 
-KeyHelper.generatePreKey(keyId).then(function (preKey) {
-  store.storePreKey(preKey.keyId, preKey.keyPair)
-})
+    const createID = async (name: string, store: SignalProtocolStore) => {
+        const registrationId = KeyHelper.generateRegistrationId()
+        storeSomewhereSafe(`registrationID`, registrationId)
 
-KeyHelper.generateSignedPreKey(identityKeyPair, keyId).then(function (signedPreKey) {
-  store.storeSignedPreKey(signedPreKey.keyId, signedPreKey.keyPair)
-})
+        const identityKeyPair = await KeyHelper.generateIdentityKeyPair()
+        storeSomewhereSafe('identityKey', identityKeyPair)
 
-// Register preKeys and signedPreKey with the server
+        const baseKeyId = makeKeyId()
+        const preKey = await KeyHelper.generatePreKey(baseKeyId)
+        store.storePreKey(`${baseKeyId}`, preKey.keyPair)
+
+        const signedPreKeyId = makeKeyId()
+        const signedPreKey = await KeyHelper.generateSignedPreKey(identityKeyPair, signedPreKeyId)
+        store.storeSignedPreKey(signedPreKeyId, signedPreKey.keyPair)
+        
+
+        // Now we register this with the server or other directory so all users can see them.
+        // You might implement your directory differently, this is not part of the SDK.
+        
+        const publicSignedPreKey: SignedPublicPreKeyType = {
+            keyId: signedPreKeyId,
+            publicKey: signedPreKey.keyPair.pubKey,
+            signature: signedPreKey.signature
+        }
+        
+        const publicPreKey : PreKeyType = {
+            keyId: preKey.keyId,
+            publicKey: preKey.keyPair.pubKey
+        }
+        
+        directory.storeKeyBundle(
+            name, 
+            {
+                registrationId,
+                identityPubKey: identityKeyPair.pubKey, 
+                signedPreKey: publicSignedPreKey, 
+                oneTimePreKeys: [publicPreKey]
+            }
+        )
+    }
+
 ```
+Relevant type definitions and classes: [KeyHelper](), [KeyPairType](), [PreKeyPairType](), [SignedPreKeyPairType](),
+[PreKeyType](), [SignedPublicPreKeyType]().
 
 ### Building a session
 
-A libsignal client needs to implement a storage interface that will manage
-loading and storing of identity, prekeys, signed prekeys, and session state.
-See `src/__test__/storage-type.ts` for an example.
-
 Once this is implemented, building a session is fairly straightforward:
 
-```js
-const store   = new MySignalProtocolStore();
-const address = new libsignal.SignalProtocolAddress(recipientId, deviceId);
+```ts
+    const starterMessageBytes = Uint8Array.from([0xce, 0x93, 0xce, 0xb5, 0xce, 0xb9, 0xce, 0xac, 0x20, 0xcf, 0x83, 0xce, 0xbf, 0xcf, 0x85])
+    
+    const startSessionWithBoris = async () => {
+        // get Boris' key bundle. This is a DeviceType<ArrayBuffer>
+        const borisBundle = directory.getPreKeyBundle('boris')
 
-// Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
-const sessionBuilder = new libsignal.SessionBuilder(store, address);
+        // borisAddress is a SignalProtocolAddress
+        const recipientAddress = borisAddress 
 
-// Process a prekey fetched from the server. Returns a promise that resolves
-// once a session is created and saved in the store, or rejects if the
-// identityKey differs from a previously seen identity for this address.
-const promise = sessionBuilder.processPreKey({
-    registrationId: <Number>,
-    identityKey: <ArrayBuffer>,
-    signedPreKey: {
-        keyId     : <Number>,
-        publicKey : <ArrayBuffer>,
-        signature : <ArrayBuffer>
-    },
-    preKey: {
-        keyId     : <Number>,
-        publicKey : <ArrayBuffer>
+        // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
+        const sessionBuilder = new SessionBuilder(adiStore, recipientAddress)
+
+        // Process a prekey fetched from the server. Returns a promise that resolves
+        // once a session is created and saved in the store, or rejects if the
+        // identityKey differs from a previously seen identity for this address.
+        await sessionBuilder.processPreKey(borisBundle!)
+
+        // Now we can encrypt a messageto get a MessageType object
+        const senderSessionCipher = new SessionCipher(adiStore, recipientAddress)
+        const ciphertext = await senderSessionCipher.encrypt(starterMessageBytes.buffer)
+
+        // The message is encrypted, now send it however you like.
+        sendMessage('boris', 'adalheid', ciphertext)
+    
     }
-});
+ ```
+Relevant type definitions: [DeviceType](), [SignalProtocolAddress](), [MessageType](), [SessionBuilder](), [SessionCipher]()
 
-promise.then(function onsuccess() {
-  // encrypt messages
-});
+*Note:* As discussed below, the Signal protocol uses two message types: `PreKeyWhisperMessage` and `WhisperMessage` that are defined
+in [the protobuf definitions]() and implemented in [libsignal-protocol-protobuf-ts](https://github.com/privacyresearchgroup/libsignal-protocol-protobuf-ts).  The message created in the sample above is a `PreKeyWhisperMessage`. It carries information needed for the recipient to build a session with the [X3DH Protocol](https://signal.org/docs/specifications/x3dh/). After a session is established for a recipient, `SessionCipher.encrypt()` will return a simpler `WhisperMessage`.
 
-promise.catch(function onerror(error) {
-  // handle identity key conflict
-});
-```
+> ***Into the weeds:** The function `sessionCipher.encrypt()` always returns a [`MessageType`]() object. Sometimes it is a `PreKeyWhisperMessage` and sometimes it is a `WhisperMessage`.  To distinguish, check `ciphertext.type`.  If `ciphertext.type === 3` then `ciphertext.body` contains a serialized `PreKeyWhisperMessage`. If `ciphertext.type === 1` then `ciphertext.body` contains a serialized `WhisperMessage`.*
 
 ### Encrypting
 
 Once you have a session established with an address, you can encrypt messages
 using SessionCipher.
 
-```js
-const plaintext = 'Hello world'
-const sessionCipher = new libsignal.SessionCipher(store, address)
-sessionCipher.encrypt(plaintext).then(function (ciphertext) {
-  // ciphertext -> { type: <Number>, body: <string> }
-  handle(ciphertext.type, ciphertext.body)
-})
+```ts
+const plaintext = 'μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος / οὐλομένην, ἣ μυρί᾽ Ἀχαιοῖς ἄλγε᾽ ἔθηκε'
+const buffer = new TextEncoder().encode(plaintext).buffer
+
+const sessionCipher = new SessionCipher(store, address)
+const ciphertext = await sessionCipher.encrypt(buffer)
+// If we've already established a session, thenciphertext.type === 1.
+
+// Now we can send it over the channel of our choice
+sendMessage('adalheid', 'boris', ciphertext) 
 ```
 
 ### Decrypting
 
 Ciphertexts come in two flavors: WhisperMessage and PreKeyWhisperMessage.
 
-```js
+```ts
 const address = new SignalProtocolAddress(recipientId, deviceId)
 const sessionCipher = new SessionCipher(store, address)
 
-// Decrypt a PreKeyWhisperMessage by first establishing a new session.
-// Returns a promise that resolves when the message is decrypted or
-// rejects if the identityKey differs from a previously seen identity for this
-// address.
-sessionCipher
-  .decryptPreKeyWhisperMessage(ciphertext)
-  .then(function (plaintext) {
-    // handle plaintext ArrayBuffer
-  })
-  .catch(function (error) {
-    // handle identity key conflict
-  })
+// Decrypting a PreKeyWhisperMessage will establish a new session and
+// store it in the SignalProtocolStore. It returns a promise that resolves 
+// when the message is decrypted or rejects if the identityKey differs from
+// a previously seen identity for this address.
 
-// Decrypt a normal message using an existing session
-const sessionCipher = new SessionCipher(store, address)
-sessionCipher.decryptWhisperMessage(ciphertext).then(function (plaintext) {
-  // handle plaintext ArrayBuffer
-})
+let plaintext: ArrayBuffer
+// ciphertext: MessageType
+if (ciphertext.type === 3) {
+   // It is a PreKeyWhisperMessage and will establish a session.
+   try {
+      plaintext = await sessionCipher.decryptPreKeyWhisperMessage(ciphertext.body!, 'binary')
+   } catch (e) {
+      // handle identity key conflict
+   }
+} else if (ciphertext.type === 1) {
+   // It is a WhisperMessage for an established session.
+   plaintext = await sessionCipher.decryptWhisperMessage(ciphertext.body!, 'binary')
+}
+
+// now you can do something with your plaintext, like
+const secretMessage = new TextDecoder().decode(new Uint8Array(plaintext))
 ```
 
 ## License
