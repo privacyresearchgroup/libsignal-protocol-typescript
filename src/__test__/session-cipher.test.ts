@@ -386,7 +386,6 @@ describe('key changes', function () {
 
     const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
-    //TODO should this be beforeAll or beforeEach?
     beforeAll(function (done) {
         Promise.all([aliceStore, bobStore].map(generateIdentity))
             .then(function () {
