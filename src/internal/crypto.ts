@@ -41,7 +41,7 @@ export class Crypto {
         try {
             return webcrypto.subtle.sign({ name: 'HMAC', hash: 'SHA-256' }, impkey, data)
         } catch (e) {
-            console.log({ e, data, impkey })
+            // console.log({ e, data, impkey })
             throw e
         }
     }

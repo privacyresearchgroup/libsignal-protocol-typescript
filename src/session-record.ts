@@ -26,12 +26,12 @@ export class SessionRecord {
                 } else {
                     for (key in sessions) {
                         if (sessions[key].indexInfo.closed === -1) {
-                            console.log(
-                                'V1 session storage migration error: registrationId',
-                                data.registrationId,
-                                'for open session version',
-                                data.version
-                            )
+                            //    console.log(
+                            //       'V1 session storage migration error: registrationId',
+                            //      data.registrationId,
+                            //     'for open session version',
+                            //     data.version
+                            // )
                         }
                     }
                 }
@@ -106,7 +106,6 @@ export class SessionRecord {
         }
         const session = this.sessions[idx]
         if (session && session.indexInfo.baseKeyType === BaseKeyType.OURS) {
-            console.log('Tried to lookup a session using our basekey')
             return undefined
         }
         return session
@@ -203,13 +202,11 @@ export class SessionRecord {
     archiveCurrentState(): void {
         const open_session = this.getOpenSession()
         if (open_session !== undefined) {
-            console.log('closing session')
             open_session.indexInfo.closed = Date.now()
             this.updateSessionState(open_session)
         }
     }
     promoteState(session: SessionType): void {
-        console.log('promoting session')
         session.indexInfo.closed = -1
     }
 
@@ -226,7 +223,6 @@ export class SessionRecord {
                     index = i
                 }
             }
-            console.log('Deleting chain closed at', oldest.added)
             const idx = util.toString(oldest.ephemeralKey)
             if (!idx) {
                 throw new Error(`invalid index for chain`)
@@ -252,7 +248,6 @@ export class SessionRecord {
                     oldestSession = session
                 }
             }
-            console.log('Deleting session closed at', oldestSession?.indexInfo.closed)
             if (oldestBaseKey) {
                 // TODO: there used to be a util.toString(oldestBaseKey).  is the key ALWAYS a string?
                 // if so don't need it.
@@ -456,9 +451,9 @@ Internal.ChainType = {
           } else {
               for (key in sessions) {
                   if (sessions[key].indexInfo.closed === -1) {
-                      console.log('V1 session storage migration error: registrationId',
-                          data.registrationId, 'for open session version',
-                          data.version);
+                     // console.log('V1 session storage migration error: registrationId',
+                      //    data.registrationId, 'for open session version',
+                      //    data.version);
                   }
               }
           }
