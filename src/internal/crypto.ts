@@ -2,35 +2,45 @@ import * as Internal from '.'
 import * as util from '../helpers'
 import { KeyPairType } from '../types'
 import msrcrypto from 'msrcrypto'
+import { AsyncCurve as AsyncCurveType } from '@privacyresearch/curve25519-typescript'
 
 const webcrypto = window?.crypto || msrcrypto
 
 export class Crypto {
     private _curve: Internal.AsyncCurve
+    private _webcrypto: globalThis.Crypto
 
-    constructor() {
+    constructor(crypto?: globalThis.Crypto) {
         this._curve = new Internal.AsyncCurve()
+        this._webcrypto = crypto || webcrypto
+    }
+
+    set webcrypto(wc: globalThis.Crypto) {
+        this._webcrypto = wc
+    }
+    set curve(c: AsyncCurveType) {
+        this._curve.curve = c
     }
 
     getRandomBytes(n: number): ArrayBuffer {
         const array = new Uint8Array(n)
-        webcrypto.getRandomValues(array)
+        this._webcrypto.getRandomValues(array)
         return util.uint8ArrayToArrayBuffer(array)
     }
 
     async encrypt(key: ArrayBuffer, data: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer> {
-        const impkey = await webcrypto.subtle.importKey('raw', key, { name: 'AES-CBC' }, false, ['encrypt'])
+        const impkey = await this._webcrypto.subtle.importKey('raw', key, { name: 'AES-CBC' }, false, ['encrypt'])
 
-        return webcrypto.subtle.encrypt({ name: 'AES-CBC', iv: new Uint8Array(iv) }, impkey, data)
+        return this._webcrypto.subtle.encrypt({ name: 'AES-CBC', iv: new Uint8Array(iv) }, impkey, data)
     }
 
     async decrypt(key: ArrayBuffer, data: ArrayBuffer, iv: ArrayBuffer): Promise<ArrayBuffer> {
-        const impkey = await webcrypto.subtle.importKey('raw', key, { name: 'AES-CBC' }, false, ['decrypt'])
+        const impkey = await this._webcrypto.subtle.importKey('raw', key, { name: 'AES-CBC' }, false, ['decrypt'])
 
-        return webcrypto.subtle.decrypt({ name: 'AES-CBC', iv: new Uint8Array(iv) }, impkey, data)
+        return this._webcrypto.subtle.decrypt({ name: 'AES-CBC', iv: new Uint8Array(iv) }, impkey, data)
     }
     async sign(key: ArrayBuffer, data: ArrayBuffer): Promise<ArrayBuffer> {
-        const impkey = await webcrypto.subtle.importKey(
+        const impkey = await this._webcrypto.subtle.importKey(
             'raw',
             key,
             { name: 'HMAC', hash: { name: 'SHA-256' } },
@@ -39,14 +49,14 @@ export class Crypto {
         )
 
         try {
-            return webcrypto.subtle.sign({ name: 'HMAC', hash: 'SHA-256' }, impkey, data)
+            return this._webcrypto.subtle.sign({ name: 'HMAC', hash: 'SHA-256' }, impkey, data)
         } catch (e) {
             // console.log({ e, data, impkey })
             throw e
         }
     }
     async hash(data: ArrayBuffer): Promise<ArrayBuffer> {
-        return webcrypto.subtle.digest({ name: 'SHA-512' }, data)
+        return this._webcrypto.subtle.digest({ name: 'SHA-512' }, data)
     }
 
     async HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: ArrayBuffer): Promise<ArrayBuffer[]> {
@@ -93,6 +103,14 @@ export class Crypto {
 }
 
 export const crypto = new Crypto()
+
+export function setWebCrypto(webcrypto: globalThis.Crypto): void {
+    crypto.webcrypto = webcrypto
+}
+
+export function setCurve(curve: AsyncCurveType): void {
+    crypto.curve = curve
+}
 
 // HKDF for TextSecure has a bit of additional handling - salts always end up being 32 bytes
 export function HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: unknown): Promise<ArrayBuffer[]> {
