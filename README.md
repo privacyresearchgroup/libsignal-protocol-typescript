@@ -235,6 +235,29 @@ if (ciphertext.type === 3) {
 // now you can do something with your plaintext, like
 const secretMessage = new TextDecoder().decode(new Uint8Array(plaintext))
 ```
+## Injecting Dependencies
+This library uses [WebCrypto]() for symmetric key cryptography and random number generation. It uses an implemenation of the [AsyncCurve](https://github.com/privacyresearchgroup/curve25519-typescript/blob/master/src/types.ts#L21) interface in [`curve25519-typescript`](https://github.com/privacyresearchgroup/curve25519-typescript) for public key operations.
+
+Functional defaults are provided for each but you may want to provide your own, either for performance or security reasons.
+
+### WebCrypto defaults and injection
+By default this library will use `window.crypto` if it is present.  Otherwise it uses [`msrcrypto`](https://www.npmjs.com/package/msrcrypto).  If you are falling back to `msrcrypto` you will want to consider providing a substitute.
+
+To replace the WebCrypto component with your own, simply call `setWebCrypto` as follows:
+```ts
+setWebCrypto(myCryptImplementation)
+```
+Your WebCrypto imlementation does not need to support the entire interface, but does need to implement:
+*   AES-CBC
+*   HMAC SHA-256
+*   `getRandomValues`
+
+### Elliptic curve crypto defaults and injection
+By default this library uses the curve X25519 implementation in [`curve25519-typescript`](https://github.com/privacyresearchgroup/curve25519-typescript).  This is a javascript implementation, compiled into [asm.js](http://asmjs.org/) from C with [emscripten](https://emscripten.org/). You may want to provide a native implementation or even use a different curve, like X448.  To do this, wrap your implementation into a an object that implements the [AsyncCurve](https://github.com/privacyresearchgroup/curve25519-typescript/blob/master/src/types.ts#L21) interface and set it as follows:
+```ts
+setCurve(myCurve)
+```
+
 
 ## License
 
