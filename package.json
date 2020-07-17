@@ -1,6 +1,6 @@
 {
   "name": "@privacyresearch/libsignal-protocol-typescript",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "author": "Rolfe Schmidt <rolfeschmidt@gmail.com>",
