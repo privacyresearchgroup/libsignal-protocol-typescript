@@ -336,7 +336,7 @@ export class SessionCipher {
             )
         }
         if (session.indexInfo.closed != -1) {
-            console.log('decrypting message for closed session')
+            //  console.log('decrypting message for closed session')
         }
 
         await this.maybeStepRatchet(session, remoteEphemeralKey, message.previousCounter)

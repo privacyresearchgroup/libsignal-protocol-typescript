@@ -238,7 +238,7 @@ async function doSendStep(
         const correctedPt = proto.flags ? pt.slice(2) : pt.slice(0, ptCorrectedLen)
 
         if (data.endSession) {
-            console.log(`END SESSION PROTO`, { proto, pt })
+            //      console.log(`END SESSION PROTO`, { proto, pt })
         }
         const msg = await sessionCipher.encrypt(pad(utils.uint8ArrayToArrayBuffer(correctedPt)))
 
@@ -253,10 +253,10 @@ async function doSendStep(
             if (new Uint8Array(data.expectedCiphertext)[0] !== msg.body?.charCodeAt(0)) {
                 throw new Error('Bad version byte')
             }
-            console.log({
-                expectedCiphertext: data.expectedCiphertext,
-                msg: msgbody,
-            })
+            //  console.log({
+            //      expectedCiphertext: data.expectedCiphertext,
+            //      msg: msgbody,
+            //  })
 
             const ourpkwmsg = PreKeyWhisperMessage.decode(msgbody)
             const datapkwmsg = PreKeyWhisperMessage.decode(new Uint8Array(data.expectedCiphertext).slice(1))
