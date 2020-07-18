@@ -8,7 +8,6 @@ import * as Internal from './internal'
 
 import { SessionRecord } from './session-record'
 import { SessionLock } from './session-lock'
-import ByteBuffer from 'bytebuffer'
 import { SessionBuilder } from './session-builder'
 import { uint8ArrayToArrayBuffer } from './helpers'
 
@@ -112,7 +111,7 @@ export class SessionCipher {
 
             preKeyMsg.message = encodedMsgWithMAC
             const encodedPreKeyMsg = PreKeyWhisperMessage.encode(preKeyMsg).finish()
-            const result = String.fromCharCode((3 << 4) | 3) + util.toString(encodedPreKeyMsg)
+            const result = String.fromCharCode((3 << 4) | 3) + util.uint8ArrayToString(encodedPreKeyMsg)
             return {
                 type: 3,
                 body: result,
@@ -121,7 +120,7 @@ export class SessionCipher {
         } else {
             return {
                 type: 1,
-                body: util.toString(encodedMsgWithMAC),
+                body: util.uint8ArrayToString(encodedMsgWithMAC),
                 registrationId: session.registrationId,
             }
         }
@@ -209,11 +208,17 @@ export class SessionCipher {
         ratchet.rootKey = masterKey[0]
     }
 
-    async decryptPreKeyWhisperMessage(buff: string, encoding?: string): Promise<ArrayBuffer> {
-        // TODO get rid of ByteBuffer
-        const buffer = ByteBuffer.wrap(buff, encoding)
-        const version = buffer.readUint8()
-        const messageData = new Uint8Array(buffer.toArrayBuffer())
+    async decryptPreKeyWhisperMessage(buff: string | ArrayBuffer, encoding?: string): Promise<ArrayBuffer> {
+        encoding = encoding || 'binary'
+        if (encoding !== 'binary') {
+            throw new Error(`unsupported encoding: ${encoding}`)
+        }
+
+        const buffer = typeof buff === 'string' ? util.binaryStringToArrayBuffer(buff) : buff
+        const view = new Uint8Array(buffer)
+        const version = view[0]
+        const messageData = view.slice(1)
+
         if ((version & 0xf) > 3 || version >> 4 < 3) {
             // min version > 3 or max version < 3
             throw new Error('Incompatible version number on PreKeyWhisperMessage')
@@ -283,9 +288,12 @@ export class SessionCipher {
         }
     }
 
-    decryptWhisperMessage(buff: string, encoding?: string): Promise<ArrayBuffer> {
-        // TODO get rid of ByteBuffer
-        const buffer = ByteBuffer.wrap(buff, encoding).toArrayBuffer()
+    decryptWhisperMessage(buff: string | ArrayBuffer, encoding?: string): Promise<ArrayBuffer> {
+        encoding = encoding || 'binary'
+        if (encoding !== 'binary') {
+            throw new Error(`unsupported encoding: ${encoding}`)
+        }
+        const buffer = typeof buff === 'string' ? util.binaryStringToArrayBuffer(buff) : buff
         const address = this.remoteAddress.toString()
         const job = async () => {
             const record = await this.getRecord(address)
@@ -322,7 +330,7 @@ export class SessionCipher {
         const version = new Uint8Array(messageBytes)[0]
         if ((version & 0xf) > 3 || version >> 4 < 3) {
             // min version > 3 or max version < 3
-            throw new Error('Incompatible version number on WhisperMessage')
+            throw new Error('Incompatible version number on WhisperMessage ' + version)
         }
         const messageProto = messageBytes.slice(1, messageBytes.byteLength - 8)
         const mac = messageBytes.slice(messageBytes.byteLength - 8, messageBytes.byteLength)

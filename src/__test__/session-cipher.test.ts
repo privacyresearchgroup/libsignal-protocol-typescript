@@ -242,13 +242,13 @@ async function doSendStep(
         }
         const msg = await sessionCipher.encrypt(pad(utils.uint8ArrayToArrayBuffer(correctedPt)))
 
-        const msgbody = new Uint8Array(utils.toArrayBuffer(msg.body!.substring(1))!)
+        const msgbody = new Uint8Array(utils.binaryStringToArrayBuffer(msg.body!.substring(1))!)
         // NOTE: equivalent protobuf objects can have different binary encodings and still be accepted by our
         // parsers to produce quivalent objects.  Instead of testing binary identity of the entire
         // protobuf message, we parse it and check field-level identity.
         let res: boolean
         if (msg.type === 1) {
-            res = utils.isEqual(data.expectedCiphertext, utils.toArrayBuffer(msg.body))
+            res = utils.isEqual(data.expectedCiphertext, utils.binaryStringToArrayBuffer(msg.body || ''))
         } else {
             if (new Uint8Array(data.expectedCiphertext)[0] !== msg.body?.charCodeAt(0)) {
                 throw new Error('Bad version byte')
@@ -276,7 +276,12 @@ async function doSendStep(
 
             const expected = PreKeyWhisperMessage.encode(datapkwmsg).finish()
 
-            if (!utils.isEqual(utils.uint8ArrayToArrayBuffer(expected), utils.toArrayBuffer(msg.body.substring(1)))) {
+            if (
+                !utils.isEqual(
+                    utils.uint8ArrayToArrayBuffer(expected),
+                    utils.binaryStringToArrayBuffer(msg.body.substring(1))
+                )
+            ) {
                 throw new Error('Result does not match expected ciphertext')
             }
 
@@ -333,7 +338,10 @@ tv.forEach(function (test) {
                 } else {
                     const privKey = privKeyQueue.shift()
                     return Internal.crypto.createKeyPair(privKey).then(function (keyPair) {
-                        if (utils.toString(keyPair.privKey) != utils.toString(privKey))
+                        if (
+                            !privKey ||
+                            utils.arrayBufferToString(keyPair.privKey) != utils.arrayBufferToString(privKey)
+                        )
                             throw new Error('Failed to rederive private key!')
                         else return keyPair
                     })
@@ -376,7 +384,7 @@ tv.forEach(function (test) {
 describe('key changes', function () {
     const ALICE_ADDRESS = new SignalProtocolAddress('+14151111111', 1)
     const BOB_ADDRESS = new SignalProtocolAddress('+14152222222', 1)
-    const originalMessage = <ArrayBuffer>utils.toArrayBuffer("L'homme est condamné à être libre")
+    const originalMessage = <ArrayBuffer>utils.binaryStringToArrayBuffer("L'homme est condamné à être libre")
 
     const aliceStore = new SignalProtocolStore()
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SignalProtocolAddress } from '../signal-protocol-address'
-import ByteBuffer from 'bytebuffer'
 import { isKeyPairType, StorageType, Direction, SessionRecordType } from '../types'
+import * as util from '../helpers'
 
 interface KeyPairType {
     pubKey: ArrayBuffer
@@ -21,18 +21,7 @@ function isArrayBuffer(thing: StoreValue): boolean {
     return !!thing && t !== 'string' && t !== 'number' && 'byteLength' in (thing as any)
 }
 
-// copied toString from util() in the helpers.ts file
-export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
-function toString(thing: Stringable): string | undefined {
-    if (typeof thing == 'string') {
-        return thing
-    } else if (typeof thing === 'number') {
-        return `${thing}`
-    }
-    return thing && ByteBuffer.wrap(thing).toString('binary')
-}
-
-type StoreValue = KeyPairType | Stringable // number | KeyPairType | PreKeyType | SignedPreKeyType | ArrayBuffer | undefined
+type StoreValue = KeyPairType | string | number | KeyPairType | PreKeyType | SignedPreKeyType | ArrayBuffer | undefined
 
 export class SignalProtocolStore implements StorageType {
     private _store: Record<string, StoreValue>
@@ -90,7 +79,9 @@ export class SignalProtocolStore implements StorageType {
         if (trusted === undefined) {
             return Promise.resolve(true)
         }
-        return Promise.resolve(toString(identityKey) === toString(trusted as Stringable))
+        return Promise.resolve(
+            util.arrayBufferToString(identityKey) === util.arrayBufferToString(trusted as ArrayBuffer)
+        )
     }
     async loadPreKey(keyId: string | number): Promise<KeyPairType | undefined> {
         let res = this.get('25519KeypreKey' + keyId, undefined)
@@ -141,7 +132,7 @@ export class SignalProtocolStore implements StorageType {
             throw new Error('Identity Key is incorrect type')
         }
 
-        if (existing && toString(identityKey) !== toString(existing as ArrayBuffer)) {
+        if (existing && util.arrayBufferToString(identityKey) !== util.arrayBufferToString(existing as ArrayBuffer)) {
             return true
         } else {
             return false

@@ -1,6 +1,5 @@
 import { FingerprintGeneratorType } from './'
-import ByteBuffer from 'bytebuffer'
-
+import * as utils from './helpers'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // const msrcrypto = require('../lib/msrcrypto')
 import msrcrypto from 'msrcrypto'
@@ -26,7 +25,12 @@ export class FingerprintGenerator implements FingerprintGeneratorType {
 }
 
 async function getDisplayStringFor(identifier: string, key: ArrayBuffer, iterations: number): Promise<string> {
-    const bytes = ByteBuffer.concat([shortToArrayBuffer(FingerprintGenerator.VERSION), key, identifier]).toArrayBuffer()
+    const bytes = concatArrayBuffers([
+        shortToArrayBuffer(FingerprintGenerator.VERSION),
+        key,
+        utils.binaryStringToArrayBuffer(identifier),
+    ])
+
     const hash = await iterateHash(bytes, key, iterations)
     const output = new Uint8Array(hash)
     return (
@@ -40,7 +44,7 @@ async function getDisplayStringFor(identifier: string, key: ArrayBuffer, iterati
 }
 
 async function iterateHash(data: ArrayBuffer, key: ArrayBuffer, count: number): Promise<ArrayBuffer> {
-    const data1 = ByteBuffer.concat([data, key]).toArrayBuffer()
+    const data1 = concatArrayBuffers([data, key])
     const result = await msrcrypto.subtle.digest({ name: 'SHA-512' }, data1)
 
     if (--count === 0) {
@@ -67,4 +71,16 @@ function getEncodedChunk(hash: Uint8Array, offset: number): string {
 
 function shortToArrayBuffer(number) {
     return new Uint16Array([number]).buffer
+}
+
+function concatArrayBuffers(bufs: ArrayBuffer[]): ArrayBuffer {
+    const lengths = bufs.map((b) => b.byteLength)
+    const totalLength = lengths.reduce((p, c) => p + c, 0)
+    const result = new Uint8Array(totalLength)
+    lengths.reduce((p, c, i) => {
+        result.set(new Uint8Array(bufs[i]), p)
+        return p + c
+    }, 0)
+
+    return result.buffer
 }

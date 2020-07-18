@@ -56,7 +56,7 @@ export interface RecordType {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SessionRecordType = string
 
-export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
+export type Stringable = string | ArrayBuffer | Buffer | Uint8Array | number | undefined
 
 export enum Direction {
     SENDING = 1,
