@@ -1,32 +1,33 @@
-import ByteBuffer from 'bytebuffer'
-export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
-export function toString(thing: Stringable): string {
-    if (typeof thing == 'string') {
-        return thing
-    } else if (typeof thing === 'number') {
-        return `${thing}`
-    }
-    //return thing && ByteBuffer.wrap(thing).toString('binary')
-    if (!thing) {
-        throw new Error('cant string undef')
-    }
-    return ByteBuffer.wrap(thing).toString('binary')
+export function arrayBufferToString(b: ArrayBuffer): string {
+    return uint8ArrayToString(new Uint8Array(b))
 }
 
-export function toArrayBuffer(thing: unknown): ArrayBuffer | undefined {
-    if (thing === undefined) {
-        return undefined
-    }
-    if (thing === Object(thing)) {
-        if (thing instanceof ArrayBuffer) {
-            return thing
+export function uint8ArrayToString(arr: Uint8Array): string {
+    const end = arr.length
+    let begin = 0
+    if (begin === end) return ''
+    let chars: number[] = []
+    const parts: string[] = []
+    while (begin < end) {
+        chars.push(arr[begin++])
+        if (chars.length >= 1024) {
+            parts.push(String.fromCharCode(...chars))
+            chars = []
         }
     }
-
-    if (typeof thing !== 'string') {
-        throw new Error('Tried to convert a non-string of type ' + typeof thing + ' to an array buffer')
+    return parts.join('') + String.fromCharCode(...chars)
+}
+export function binaryStringToArrayBuffer(str: string): ArrayBuffer {
+    let i = 0
+    const k = str.length
+    let charCode
+    const bb: number[] = []
+    while (i < k) {
+        charCode = str.charCodeAt(i)
+        if (charCode > 0xff) throw RangeError('illegal char code: ' + charCode)
+        bb[i++] = charCode
     }
-    return ByteBuffer.wrap(thing, 'binary').toArrayBuffer()
+    return Uint8Array.from(bb).buffer
 }
 
 export function isEqual(a: ArrayBuffer | undefined, b: ArrayBuffer | undefined): boolean {
@@ -34,8 +35,8 @@ export function isEqual(a: ArrayBuffer | undefined, b: ArrayBuffer | undefined):
     if (a === undefined || b === undefined) {
         return false
     }
-    const a1: string = toString(a)
-    const b1: string = toString(b)
+    const a1: string = arrayBufferToString(a)
+    const b1: string = arrayBufferToString(b)
     const maxLength = Math.max(a1.length, b1.length)
     if (maxLength < 5) {
         throw new Error('a/b compare too short')

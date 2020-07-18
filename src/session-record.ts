@@ -100,7 +100,7 @@ export class SessionRecord {
     }
 
     getSessionByBaseKey(baseKey: ArrayBuffer): SessionType | undefined {
-        const idx = util.toString(baseKey)
+        const idx = util.arrayBufferToString(baseKey)
         if (!idx) {
             return undefined
         }
@@ -115,7 +115,7 @@ export class SessionRecord {
         this.detectDuplicateOpenSessions()
         const sessions = this.sessions
 
-        const searchKey = util.toString(remoteEphemeralKey)
+        const searchKey = util.arrayBufferToString(remoteEphemeralKey)
 
         if (searchKey) {
             let openSession
@@ -169,7 +169,7 @@ export class SessionRecord {
 
         this.removeOldChains(session)
 
-        const idx = util.toString(session.indexInfo.baseKey)
+        const idx = session.indexInfo.baseKey && util.arrayBufferToString(session.indexInfo.baseKey)
         if (!idx) {
             throw new Error(`invalid index for session`)
         }
@@ -223,7 +223,7 @@ export class SessionRecord {
                     index = i
                 }
             }
-            const idx = util.toString(oldest.ephemeralKey)
+            const idx = util.arrayBufferToString(oldest.ephemeralKey)
             if (!idx) {
                 throw new Error(`invalid index for chain`)
             }

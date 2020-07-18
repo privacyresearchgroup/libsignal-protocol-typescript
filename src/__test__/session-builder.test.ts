@@ -28,7 +28,7 @@ describe('basic prekey v3', function () {
         return builder.processPreKey(preKeyBundle)
     })
 
-    const originalMessage = <ArrayBuffer>utils.toArrayBuffer("L'homme est condamné à être libre")
+    const originalMessage = <ArrayBuffer>utils.binaryStringToArrayBuffer("L'homme est condamné à être libre")
     const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
     const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
@@ -96,7 +96,7 @@ describe('basic v3 NO PREKEY', function () {
         return builder.processPreKey(preKeyBundle)
     })
 
-    const originalMessage = <ArrayBuffer>utils.toArrayBuffer("L'homme est condamné à être libre")
+    const originalMessage = <ArrayBuffer>utils.binaryStringToArrayBuffer("L'homme est condamné à être libre")
     const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
     const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 

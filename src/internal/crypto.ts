@@ -113,12 +113,12 @@ export function setCurve(curve: AsyncCurveType): void {
 }
 
 // HKDF for TextSecure has a bit of additional handling - salts always end up being 32 bytes
-export function HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: unknown): Promise<ArrayBuffer[]> {
+export function HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: string): Promise<ArrayBuffer[]> {
     if (salt.byteLength != 32) {
         throw new Error('Got salt of incorrect length')
     }
 
-    const abInfo = util.toArrayBuffer(info)
+    const abInfo = util.binaryStringToArrayBuffer(info)
     if (!abInfo) {
         throw new Error(`Invalid HKDF info`)
     }
