@@ -48,7 +48,6 @@ export class SignalProtocolStore implements StorageType {
         this._store[key] = value
     }
 
-    //
     async getIdentityKeyPair(): Promise<KeyPairType | undefined> {
         const kp = this.get('identityKey', undefined)
         if (isKeyPairType(kp) || typeof kp === 'undefined') {
@@ -95,7 +94,6 @@ export class SignalProtocolStore implements StorageType {
     }
     async loadSession(identifier: string): Promise<SessionRecordType | undefined> {
         const rec = this.get('session' + identifier, undefined)
-        // console.log(`loadSession`, { identifier, rec, store: this._store })
         if (typeof rec === 'string') {
             return rec as string
         } else if (typeof rec === 'undefined') {
@@ -104,9 +102,7 @@ export class SignalProtocolStore implements StorageType {
         throw new Error(`session record is not an ArrayBuffer`)
     }
 
-    // TODO: should this really return a signed prekey?
-    async loadSignedPreKey(keyId: number): Promise<KeyPairType | undefined> {
-        // loadSignedPreKey: function(keyId) {
+    async loadSignedPreKey(keyId: number | string): Promise<KeyPairType | undefined> {
         const res = this.get('25519KeysignedKey' + keyId, undefined)
         if (isKeyPairType(res)) {
             return { pubKey: res.pubKey, privKey: res.privKey }
@@ -116,11 +112,9 @@ export class SignalProtocolStore implements StorageType {
         throw new Error(`stored key has wrong type`)
     }
     async removePreKey(keyId: number | string): Promise<void> {
-        //    removePreKey: function(keyId) {
         this.remove('25519KeypreKey' + keyId)
     }
     async saveIdentity(identifier: string, identityKey: ArrayBuffer): Promise<boolean> {
-        //   saveIdentity: function(identifier, identityKey) {
         if (identifier === null || identifier === undefined)
             throw new Error('Tried to put identity key for undefined/null key')
 
@@ -154,15 +148,15 @@ export class SignalProtocolStore implements StorageType {
         }
         throw new Error(`Identity key has wrong type`)
     }
-    async storePreKey(keyId: string, keyPair: KeyPairType): Promise<void> {
+    async storePreKey(keyId: number | string, keyPair: KeyPairType): Promise<void> {
         return this.put('25519KeypreKey' + keyId, keyPair)
     }
 
     // TODO: Why is this keyId a number where others are strings?
-    async storeSignedPreKey(keyId: number, keyPair: KeyPairType): Promise<void> {
+    async storeSignedPreKey(keyId: number | string, keyPair: KeyPairType): Promise<void> {
         return this.put('25519KeysignedKey' + keyId, keyPair)
     }
-    async removeSignedPreKey(keyId: number): Promise<void> {
+    async removeSignedPreKey(keyId: number | string): Promise<void> {
         return this.remove('25519KeysignedKey' + keyId)
     }
     async removeSession(identifier: string): Promise<void> {
