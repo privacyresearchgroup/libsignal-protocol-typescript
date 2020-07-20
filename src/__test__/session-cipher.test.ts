@@ -13,7 +13,7 @@ import { KeyPairType } from '../types'
 import * as utils from '../helpers'
 import {
     PreKeyWhisperMessage,
-    PushMessageContent,
+    PushMessageContentCompatible as PushMessageContent,
     IncomingPushMessageSignal_Type,
     PushMessageContent_Flags,
     WhisperMessage,
@@ -234,13 +234,11 @@ async function doSendStep(
 
         const sessionCipher = new SessionCipher(store, address)
         const pt = PushMessageContent.encode(proto).finish()
-        const ptCorrectedLen = 2 + data.smsText?.length || 0
-        const correctedPt = proto.flags ? pt.slice(2) : pt.slice(0, ptCorrectedLen)
 
         if (data.endSession) {
             //      console.log(`END SESSION PROTO`, { proto, pt })
         }
-        const msg = await sessionCipher.encrypt(pad(utils.uint8ArrayToArrayBuffer(correctedPt)))
+        const msg = await sessionCipher.encrypt(pad(utils.uint8ArrayToArrayBuffer(pt)))
 
         const msgbody = new Uint8Array(utils.binaryStringToArrayBuffer(msg.body!.substring(1))!)
         // NOTE: equivalent protobuf objects can have different binary encodings and still be accepted by our

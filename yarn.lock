@@ -468,10 +468,10 @@
   resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.7.tgz#a028dea902af531997cfe331c58cccdefda977b3"
   integrity sha512-9MyIq/pLsKYESHsY6yNE3g0o6AAaetzh+XOAumdU/CU0QNpDfG+0ciM5A7pEawWyas30/iUxKv0gLBnYVy2DWw==
 
-"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.5.tgz#94c2c959b1fbb0a1659f44a477dcc8edf8847ea4"
-  integrity sha512-GNiIRwaos+J1UvRN8DgkNWR1aL4rQ3onfXfQrFvTcYvAfUOY0X8myRJIlBTHXnRNsufEheJpfsFjkKCtNT+Yxw==
+"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.6.tgz#cf17163c7a823815abfec68f9115f7d56c486760"
+  integrity sha512-pugBbWi1ep2sWZiP1MAG69jYnQg7beT82yEIAdPlNaLBC5GyGAeZFmBS6bC5wA5VcA4myWt+B8x5896PQnQXPg==
   dependencies:
     ts-proto "^1.26.0"
 
