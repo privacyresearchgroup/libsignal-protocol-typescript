@@ -56,7 +56,7 @@ export interface RecordType {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SessionRecordType = string
 
-export type Stringable = string | ByteBuffer | ArrayBuffer | Buffer | Uint8Array | number | undefined
+export type Stringable = string | ArrayBuffer | Buffer | Uint8Array | number | undefined
 
 export enum Direction {
     SENDING = 1,
@@ -71,16 +71,16 @@ export interface StorageType {
     saveIdentity: (encodedAddress: string, publicKey: ArrayBuffer, nonblockingApproval?: boolean) => Promise<boolean>
 
     loadPreKey: (encodedAddress: string | number) => Promise<KeyPairType | undefined>
-    storePreKey: (keyId: string, keyPair: KeyPairType) => Promise<void>
+    storePreKey: (keyId: number | string, keyPair: KeyPairType) => Promise<void>
     removePreKey: (keyId: number | string) => Promise<void>
 
     storeSession: (encodedAddress: string, record: SessionRecordType) => Promise<void>
     loadSession: (encodedAddress: string) => Promise<SessionRecordType | undefined>
 
-    // TODO: should this really return a signed prekey?
-    loadSignedPreKey: (keyId: number) => Promise<KeyPairType | undefined>
-    storeSignedPreKey: (keyId: number, keyPair: KeyPairType) => Promise<void>
-    removeSignedPreKey: (keyId: number) => Promise<void>
+    // This returns a KeyPairType, but note that it's the implenenter's responsibility to validate!
+    loadSignedPreKey: (keyId: number | string) => Promise<KeyPairType | undefined>
+    storeSignedPreKey: (keyId: number | string, keyPair: KeyPairType) => Promise<void>
+    removeSignedPreKey: (keyId: number | string) => Promise<void>
 }
 
 export interface CurveType {

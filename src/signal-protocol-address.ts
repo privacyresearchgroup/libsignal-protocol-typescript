@@ -39,12 +39,6 @@ export class SignalProtocolAddress implements SignalProtocolAddressType {
     }
 
     equals(other: SignalProtocolAddressType): boolean {
-        // TODO: do we really need the instanceof check here? Could just check that
-        // name and deviceId are defined. Is there any chance that a different type of
-        // object with a name and deviceId will get passed in?
-        if (!(other instanceof SignalProtocolAddress)) {
-            return false
-        }
         return other.name === this._name && other.deviceId == this._deviceId
     }
 }

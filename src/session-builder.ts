@@ -28,7 +28,6 @@ export class SessionBuilder {
         }
 
         // This will throw if invalid
-        console.log(`verify device prekey sig`)
         await Internal.crypto.Ed25519Verify(
             device.identityKey,
             device.signedPreKey.publicKey,
@@ -230,7 +229,6 @@ export class SessionBuilder {
         ])
 
         if (record.getSessionByBaseKey(message.baseKey)) {
-            console.log('Duplicate PreKeyMessage for session')
             return
         }
 
@@ -251,7 +249,7 @@ export class SessionBuilder {
             record.archiveCurrentState()
         }
         if (message.preKeyId && !preKeyPair) {
-            console.log('Invalid prekey id', message.preKeyId)
+            // console.log('Invalid prekey id', message.preKeyId)
         }
         // if (!preKeyPair) {
         //     throw new Error(`preKeyPair is missing`)

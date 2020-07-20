@@ -1,14 +1,23 @@
 import { KeyPairType } from '../types'
-import { Curve25519Wrapper, AsyncCurve25519Wrapper } from '@privacyresearch/curve25519-typescript'
+import {
+    Curve25519Wrapper,
+    AsyncCurve25519Wrapper,
+    AsyncCurve as AsyncCurveType,
+    Curve as CurveType,
+} from '@privacyresearch/curve25519-typescript'
 import { uint8ArrayToArrayBuffer } from '../helpers'
 
 export class Curve {
     // Curve 25519 crypto
-    private _curve25519: Curve25519Wrapper
+    private _curve25519: CurveType
     async: AsyncCurve
     constructor(curve25519: Curve25519Wrapper) {
         this._curve25519 = curve25519
         this.async = new AsyncCurve()
+    }
+
+    set curve(c: CurveType) {
+        this._curve25519 = c
     }
 
     createKeyPair(privKey: ArrayBuffer): KeyPairType {
@@ -58,9 +67,13 @@ export class Curve {
 }
 
 export class AsyncCurve {
-    private _curve25519: AsyncCurve25519Wrapper
+    private _curve25519: AsyncCurveType
     constructor() {
         this._curve25519 = new AsyncCurve25519Wrapper()
+    }
+
+    set curve(c: AsyncCurveType) {
+        this._curve25519 = c
     }
 
     async createKeyPair(privKey: ArrayBuffer): Promise<KeyPairType> {
