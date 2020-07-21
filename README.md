@@ -7,7 +7,6 @@ Signal Protocol Typescript implementation based on [libsignal-protocol-javscript
 ```
 /lib                # contains MSR's crypto library
 /src                # TS source files
-/src/internal       # Curve and Crypto class definitions
 /src/__test__       # Tests
 /src/__test-utils__ # Test Utilities
 ```
@@ -56,15 +55,6 @@ State is kept in the following places:
   PreKeys.
 - Session State. Clients will need to maintain the state of the sessions they
   have established.
-
-## Requirements
-
-This implementation currently depends on the presence of the following
-types/interfaces, which are available in most modern browsers.
-
-- [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)
-- [TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
-- [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 
 ## Usage
 
