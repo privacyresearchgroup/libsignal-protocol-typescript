@@ -2,12 +2,13 @@
 
 Signal Protocol Typescript implementation based on [libsignal-protocol-javscript](https://github.com/signalapp/libsignal-protocol-javascript).
 
-## ROLFE-TODO
+## Code layout
 
 ```
-/lib                #
+/lib                # contains MSR's crypto library
 /src                # TS source files
 /src/__test__       # Tests
+/src/__test-utils__ # Test Utilities
 ```
 
 ## Overview
@@ -55,18 +56,9 @@ State is kept in the following places:
 - Session State. Clients will need to maintain the state of the sessions they
   have established.
 
-## Requirements (ROLFE-TODO)
+## Usage
 
-This implementation currently depends on the presence of the following
-types/interfaces, which are available in most modern browsers.
-
-- [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)
-- [TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
-- [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
-
-## Usage (ROLFE-TODO)
-
-The code samples below come almost directly from our [sample web application](). Please have a look there to see how everything fits together. Look at this project's unit tests too.
+The code samples below come almost directly from our [sample web application](https://github.com/privacyresearchgroup/libsignal-typescript-demo). Please have a look there to see how everything fits together. Look at this project's unit tests too.
 
 ### Add the SDK to your project
 
