@@ -18,8 +18,6 @@ export interface SessionType<T = ArrayBuffer> {
 
     oldRatchetList: OldRatchetInfo<T>[]
 
-    // TODO: In the original lib this map was part of the session type - you'd
-    // say `chain = session[ephKey]`.  We're changing it to `chain = session.chains[ephKey]`
     chains: { [ephKeyString: string]: Chain<T> }
 }
 
