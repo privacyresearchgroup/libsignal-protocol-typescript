@@ -61,7 +61,6 @@ export class Crypto {
 
     async HKDF(input: ArrayBuffer, salt: ArrayBuffer, info: ArrayBuffer): Promise<ArrayBuffer[]> {
         // Specific implementation of RFC 5869 that only returns the first 3 32-byte chunks
-        // TODO: We dont always need the third chunk, we might skip it
         if (typeof info === 'string') {
             throw new Error(`HKDF info was a string`)
         }
