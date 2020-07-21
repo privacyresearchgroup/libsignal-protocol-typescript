@@ -2,6 +2,7 @@ import { SignalProtocolAddress } from '../signal-protocol-address'
 import { SignalProtocolStore } from './storage-type'
 import * as Internal from '../internal'
 import { assertEqualArrayBuffers } from '../__test-utils__/utils'
+import { Direction } from '../types'
 
 describe('SignalProtocolStore', function () {
     const store = new SignalProtocolStore()
@@ -55,7 +56,7 @@ describe('SignalProtocolStore', function () {
             test('returns true if a key is trusted', async () => {
                 const testKey = await keyPairPromise
                 await store.saveIdentity(address.toString(), testKey.pubKey)
-                const trusted = await store.isTrustedIdentity(number, testKey.pubKey)
+                const trusted = await store.isTrustedIdentity(number, testKey.pubKey, Direction.RECEIVING)
                 expect(trusted).toBeTruthy()
             })
 
@@ -63,7 +64,7 @@ describe('SignalProtocolStore', function () {
                 const testKey = await keyPairPromise
                 const newIdentity = Internal.crypto.getRandomBytes(33)
                 await store.saveIdentity(address.toString(), testKey.pubKey)
-                const trusted = await store.isTrustedIdentity(number, newIdentity)
+                const trusted = await store.isTrustedIdentity(number, newIdentity, Direction.RECEIVING)
                 expect(trusted).toBeFalsy()
             })
         })

@@ -71,3 +71,16 @@ export interface DeviceType<T = ArrayBuffer> {
     preKey?: PreKeyType<T>
     registrationId: number
 }
+
+export interface RecordType {
+    archiveCurrentState: () => void
+    deleteAllSessions: () => void
+    getOpenSession: () => SessionType | undefined
+    getSessionByBaseKey: (baseKey: ArrayBuffer) => SessionType | undefined
+    getSessionByRemoteEphemeralKey: (remoteEphemeralKey: ArrayBuffer) => SessionType | undefined
+    getSessions: () => SessionType[]
+    haveOpenSession: () => boolean
+    promoteState: (session: SessionType) => void
+    serialize: () => string
+    updateSessionState: (session: SessionType) => void
+}

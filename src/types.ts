@@ -39,24 +39,7 @@ export interface SignedPublicPreKeyType<T = ArrayBuffer> extends PreKeyType<T> {
     signature: T
 }
 
-// TODO: Make this match reality
-export interface RecordType {
-    archiveCurrentState: () => void
-    deleteAllSessions: () => void
-    getOpenSession: () => void
-    getSessionByBaseKey: () => void
-    getSessions: () => void
-    haveOpenSession: () => void
-    promoteState: () => void
-    serialize: () => void
-    updateSessionState: () => void
-}
-
-// TODO: any????
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SessionRecordType = string
-
-export type Stringable = string | ArrayBuffer | Buffer | Uint8Array | number | undefined
 
 export enum Direction {
     SENDING = 1,
@@ -66,8 +49,7 @@ export interface StorageType {
     getIdentityKeyPair: () => Promise<KeyPairType | undefined>
     getLocalRegistrationId: () => Promise<number | undefined>
 
-    // TODO: direction is unused in test code but probably should be required
-    isTrustedIdentity: (identifier: string, identityKey: ArrayBuffer, direction?: Direction) => Promise<boolean>
+    isTrustedIdentity: (identifier: string, identityKey: ArrayBuffer, direction: Direction) => Promise<boolean>
     saveIdentity: (encodedAddress: string, publicKey: ArrayBuffer, nonblockingApproval?: boolean) => Promise<boolean>
 
     loadPreKey: (encodedAddress: string | number) => Promise<KeyPairType | undefined>
@@ -98,18 +80,4 @@ export interface AsyncCurveType {
     calculateAgreement: (pubKey: ArrayBuffer, privKey: ArrayBuffer) => Promise<ArrayBuffer>
     verifySignature: (pubKey: ArrayBuffer, msg: ArrayBuffer, sig: ArrayBuffer) => Promise<boolean>
     calculateSignature: (privKey: ArrayBuffer, message: ArrayBuffer) => Promise<ArrayBuffer>
-}
-
-// Type guards
-// TODO check if ArrayBuffer!
-export function isKeyPairType(kp: any): kp is KeyPairType {
-    return !!(kp?.privKey && kp?.pubKey)
-}
-
-export function isPreKeyType(pk: any): pk is PreKeyPairType {
-    return typeof pk?.keyId === 'number' && isKeyPairType(pk?.keyPair)
-}
-
-export function isSignedPReKeyType(spk: any): spk is SignedPreKeyPairType {
-    return spk?.signature && isPreKeyType(spk)
 }
