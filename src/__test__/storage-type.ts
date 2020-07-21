@@ -1,7 +1,21 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SignalProtocolAddress } from '../signal-protocol-address'
-import { isKeyPairType, StorageType, Direction, SessionRecordType } from '../types'
+import { StorageType, Direction, SessionRecordType, PreKeyPairType, SignedPreKeyPairType } from '../types'
 import * as util from '../helpers'
+
+// Type guards
+export function isKeyPairType(kp: any): kp is KeyPairType {
+    return !!(kp?.privKey && kp?.pubKey)
+}
+
+export function isPreKeyType(pk: any): pk is PreKeyPairType {
+    return typeof pk?.keyId === 'number' && isKeyPairType(pk?.keyPair)
+}
+
+export function isSignedPreKeyType(spk: any): spk is SignedPreKeyPairType {
+    return spk?.signature && isPreKeyType(spk)
+}
 
 interface KeyPairType {
     pubKey: ArrayBuffer
@@ -67,7 +81,7 @@ export class SignalProtocolStore implements StorageType {
         identifier: string,
         identityKey: ArrayBuffer,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        _direction?: Direction
+        _direction: Direction
     ): Promise<boolean> {
         if (identifier === null || identifier === undefined) {
             throw new Error('tried to check identity key for undefined/null key')

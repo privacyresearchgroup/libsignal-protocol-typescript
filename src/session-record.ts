@@ -4,17 +4,27 @@ import base64 from 'base64-js'
 
 import * as util from './helpers'
 import { KeyPairType } from './types'
-import { SessionType, BaseKeyType, PendingPreKey, Chain, OldRatchetInfo, Ratchet, IndexInfo } from './session-types'
+import {
+    SessionType,
+    BaseKeyType,
+    PendingPreKey,
+    Chain,
+    OldRatchetInfo,
+    Ratchet,
+    IndexInfo,
+    RecordType,
+} from './session-types'
 
 const ARCHIVED_STATES_MAX_LENGTH = 40
 const OLD_RATCHETS_MAX_LENGTH = 10
 const SESSION_RECORD_VERSION = 'v1'
 
-export class SessionRecord {
-    static migrations = [
+export class SessionRecord implements RecordType {
+    private static migrations = [
         {
             version: 'v1',
-            migrate: function migrateV1(data) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            migrate: function migrateV1(data: any) {
                 const sessions = data.sessions
                 let key
                 if (data.registrationId) {
@@ -39,7 +49,8 @@ export class SessionRecord {
         },
     ]
 
-    static migrate(data): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private static migrate(data: any): void {
         let run = data.version === undefined
         for (let i = 0; i < SessionRecord.migrations.length; ++i) {
             if (run) {
