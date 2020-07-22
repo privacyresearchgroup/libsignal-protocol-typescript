@@ -260,8 +260,6 @@ export class SessionRecord implements RecordType {
                 }
             }
             if (oldestBaseKey) {
-                // TODO: there used to be a util.toString(oldestBaseKey).  is the key ALWAYS a string?
-                // if so don't need it.
                 delete sessions[oldestBaseKey]
             }
         }
