@@ -463,10 +463,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@privacyresearch/curve25519-typescript@^0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.7.tgz#a028dea902af531997cfe331c58cccdefda977b3"
-  integrity sha512-9MyIq/pLsKYESHsY6yNE3g0o6AAaetzh+XOAumdU/CU0QNpDfG+0ciM5A7pEawWyas30/iUxKv0gLBnYVy2DWw==
+"@privacyresearch/curve25519-typescript@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.9.tgz#0baee41d71136427214dc2d453c2c1d4ec70dedb"
+  integrity sha512-6UOLZbA1w+/g++/k/p7b0Yun5fBoqky11LCofvxjVu/ctb7QeqdhOSEvC5JWyGe+lOclhN6IV8gbLrqWjiet6Q==
 
 "@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.6":
   version "0.0.6"
