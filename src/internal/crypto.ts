@@ -1,10 +1,9 @@
 import * as Internal from '.'
 import * as util from '../helpers'
 import { KeyPairType } from '../types'
-import msrcrypto from 'msrcrypto'
 import { AsyncCurve as AsyncCurveType } from '@privacyresearch/curve25519-typescript'
 
-const webcrypto = window?.crypto || msrcrypto
+const webcrypto = globalThis?.crypto || window?.crypto || require('../../lib/msrcrypto')
 
 export class Crypto {
     private _curve: Internal.AsyncCurve
