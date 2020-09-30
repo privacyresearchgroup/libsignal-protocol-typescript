@@ -1,6 +1,6 @@
 {
   "name": "@privacyresearch/libsignal-protocol-typescript",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "repository": "https://github.com/privacyresearchgroup/libsignal-protocol-typescript",
