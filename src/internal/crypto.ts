@@ -3,7 +3,8 @@ import * as util from '../helpers'
 import { KeyPairType } from '../types'
 import { AsyncCurve as AsyncCurveType } from '@privacyresearch/curve25519-typescript'
 
-const webcrypto = globalThis?.crypto || window?.crypto || require('../../lib/msrcrypto')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const webcrypto = globalThis?.crypto || require('../../lib/msrcrypto') // globalThis?.crypto || window?.crypto || require('../../lib/msrcrypto')
 
 export class Crypto {
     private _curve: Internal.AsyncCurve
