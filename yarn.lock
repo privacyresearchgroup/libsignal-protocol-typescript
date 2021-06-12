@@ -485,15 +485,15 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@privacyresearch/curve25519-typescript@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.9.tgz#0baee41d71136427214dc2d453c2c1d4ec70dedb"
-  integrity sha512-6UOLZbA1w+/g++/k/p7b0Yun5fBoqky11LCofvxjVu/ctb7QeqdhOSEvC5JWyGe+lOclhN6IV8gbLrqWjiet6Q==
+"@privacyresearch/curve25519-typescript@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.10.tgz#4a47c86143ca4b015ea739a64979c5a2469ac519"
+  integrity sha512-ORRugHt5AeBwMt4itMoCp8te6Ff335rY9PqDXgQC2iUrx3QeeLaPB3oD1p4JgIqlS8EmB1/P2C1JpT/ZHEl9Cw==
 
-"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.7.tgz#88dea9a415e3acb39218a1a1bc6886c8c96d6ae9"
-  integrity sha512-DyVC8p19WuGYKIYmBKblPK4iZCcva/TbM89deOsZ5vtOf48XnnkHQuChhVApw4ZkawyIhAHWXCe4QYS+7ruHoQ==
+"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.8.tgz#5f8c6f70b1f50805b06fa38d81c0994f82e8562f"
+  integrity sha512-bgvpQ7eH8izwbrXPXzfQRWjWSiPHxjtUWLIO82VYfdWRn66yk9dIbHbiqawZk88yMV23PAub1nJd3VpPdlfJqw==
   dependencies:
     ts-proto "^1.26.0"
 
@@ -1867,9 +1867,9 @@ getpass@^0.1.1:
     assert-plus "^1.0.0"
 
 glob-parent@^5.0.0:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-5.1.1.tgz#b6c1ef417c4e5663ea498f1c45afac6916bbc229"
-  integrity sha512-FnI+VGOpnlGHWZxthPGR+QhR78fuiK0sNLkHQv+bL9fQi57lNNdquIbna/WrfROrolq8GK5Ek6BiMwqL/voRYQ==
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-5.1.2.tgz#869832c58034fe68a4093c17dc15e8340d8401c4"
+  integrity sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==
   dependencies:
     is-glob "^4.0.1"
 
