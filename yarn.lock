@@ -485,15 +485,15 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@privacyresearch/curve25519-typescript@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.9.tgz#0baee41d71136427214dc2d453c2c1d4ec70dedb"
-  integrity sha512-6UOLZbA1w+/g++/k/p7b0Yun5fBoqky11LCofvxjVu/ctb7QeqdhOSEvC5JWyGe+lOclhN6IV8gbLrqWjiet6Q==
+"@privacyresearch/curve25519-typescript@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.10.tgz#4a47c86143ca4b015ea739a64979c5a2469ac519"
+  integrity sha512-ORRugHt5AeBwMt4itMoCp8te6Ff335rY9PqDXgQC2iUrx3QeeLaPB3oD1p4JgIqlS8EmB1/P2C1JpT/ZHEl9Cw==
 
-"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.7.tgz#88dea9a415e3acb39218a1a1bc6886c8c96d6ae9"
-  integrity sha512-DyVC8p19WuGYKIYmBKblPK4iZCcva/TbM89deOsZ5vtOf48XnnkHQuChhVApw4ZkawyIhAHWXCe4QYS+7ruHoQ==
+"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.8.tgz#5f8c6f70b1f50805b06fa38d81c0994f82e8562f"
+  integrity sha512-bgvpQ7eH8izwbrXPXzfQRWjWSiPHxjtUWLIO82VYfdWRn66yk9dIbHbiqawZk88yMV23PAub1nJd3VpPdlfJqw==
   dependencies:
     ts-proto "^1.26.0"
 
@@ -3221,9 +3221,9 @@ path-key@^3.0.0, path-key@^3.1.0:
   integrity sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==
 
 path-parse@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.6.tgz#d62dbb5679405d72c4737ec58600e9ddcf06d24c"
-  integrity sha512-GSmOT2EbHrINBf9SR7CDELwlJ8AENk3Qn7OikK4nFYAu3Ote2+JYNVvkpAEQm3/TLNEJFD/xZJjzyxg3KBWOzw==
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
+  integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
 
 performance-now@^2.1.0:
   version "2.1.0"
