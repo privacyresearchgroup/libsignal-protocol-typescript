@@ -485,15 +485,15 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@privacyresearch/curve25519-typescript@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.9.tgz#0baee41d71136427214dc2d453c2c1d4ec70dedb"
-  integrity sha512-6UOLZbA1w+/g++/k/p7b0Yun5fBoqky11LCofvxjVu/ctb7QeqdhOSEvC5JWyGe+lOclhN6IV8gbLrqWjiet6Q==
+"@privacyresearch/curve25519-typescript@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.10.tgz#4a47c86143ca4b015ea739a64979c5a2469ac519"
+  integrity sha512-ORRugHt5AeBwMt4itMoCp8te6Ff335rY9PqDXgQC2iUrx3QeeLaPB3oD1p4JgIqlS8EmB1/P2C1JpT/ZHEl9Cw==
 
-"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.7.tgz#88dea9a415e3acb39218a1a1bc6886c8c96d6ae9"
-  integrity sha512-DyVC8p19WuGYKIYmBKblPK4iZCcva/TbM89deOsZ5vtOf48XnnkHQuChhVApw4ZkawyIhAHWXCe4QYS+7ruHoQ==
+"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.8.tgz#5f8c6f70b1f50805b06fa38d81c0994f82e8562f"
+  integrity sha512-bgvpQ7eH8izwbrXPXzfQRWjWSiPHxjtUWLIO82VYfdWRn66yk9dIbHbiqawZk88yMV23PAub1nJd3VpPdlfJqw==
   dependencies:
     ts-proto "^1.26.0"
 
@@ -3920,9 +3920,9 @@ throat@^5.0.0:
   integrity sha512-fcwX4mndzpLQKBS1DVYhGAcYaYt7vsHNIvQV+WXMvnow5cgjPphq5CaayLaGsjRdSCKZFNGt7/GYAuXaNOiYCA==
 
 tmpl@1.0.x:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/tmpl/-/tmpl-1.0.4.tgz#23640dd7b42d00433911140820e5cf440e521dd1"
-  integrity sha1-I2QN17QtAEM5ERQIIOXPRA5SHdE=
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/tmpl/-/tmpl-1.0.5.tgz#8683e0b902bb9c20c4f726e3c0b69f36518c07cc"
+  integrity sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==
 
 to-fast-properties@^2.0.0:
   version "2.0.0"
