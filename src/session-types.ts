@@ -12,7 +12,7 @@ export enum BaseKeyType {
 
 export interface SessionType<T = ArrayBuffer> {
     indexInfo: IndexInfo<T>
-    registrationId: number
+    registrationId?: number
     currentRatchet: Ratchet<T>
     pendingPreKey?: PendingPreKey<T>
 
@@ -42,7 +42,7 @@ export interface OldRatchetInfo<T> {
 
 export interface Chain<T> {
     chainType: ChainType
-    chainKey: { key: T; counter: number }
+    chainKey: { key?: T; counter: number }
     messageKeys: { [key: number]: T }
 }
 
@@ -67,7 +67,7 @@ export interface DeviceType<T = ArrayBuffer> {
     identityKey: T
     signedPreKey: SignedPublicPreKeyType<T>
     preKey?: PreKeyType<T>
-    registrationId: number
+    registrationId?: number
 }
 
 export interface RecordType {

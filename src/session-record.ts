@@ -320,7 +320,7 @@ export function chainStringToArrayBuffer(c: Chain<string>): Chain<ArrayBuffer> {
     return {
         chainType,
         chainKey: {
-            key: util.uint8ArrayToArrayBuffer(base64.toByteArray(key)),
+            key: key ? util.uint8ArrayToArrayBuffer(base64.toByteArray(key)) : undefined,
             counter,
         },
         messageKeys: newMessageKeys,
@@ -337,7 +337,7 @@ export function chainArrayBufferToString(c: Chain<ArrayBuffer>): Chain<string> {
     return {
         chainType,
         chainKey: {
-            key: abToS(key),
+            key: key ? abToS(key) : undefined,
             counter,
         },
         messageKeys: newMessageKeys,

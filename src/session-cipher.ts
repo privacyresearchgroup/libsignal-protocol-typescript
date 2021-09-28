@@ -14,7 +14,7 @@ import { uint8ArrayToArrayBuffer } from './helpers'
 export interface MessageType {
     type: number
     body?: string
-    registrationId: number
+    registrationId?: number
 }
 export class SessionCipher {
     storage: StorageType
@@ -279,7 +279,7 @@ export class SessionCipher {
 
             return { plaintext: plaintext, session: session }
         } catch (e) {
-            if (e.name === 'MessageCounterError') {
+            if ((e as Error).name === 'MessageCounterError') {
                 return Promise.reject(e)
             }
 

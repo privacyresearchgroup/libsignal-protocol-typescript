@@ -56,7 +56,7 @@ describe('New Crypto Tests 2020', function () {
         try {
             await Internal.crypto.Ed25519Verify(pub, msg, badsig)
         } catch (e) {
-            if (e.message === 'Invalid signature') {
+            if ((e as Error).message === 'Invalid signature') {
                 return
             }
         }
