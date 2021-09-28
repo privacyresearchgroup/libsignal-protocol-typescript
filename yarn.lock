@@ -723,17 +723,17 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@privacyresearch/curve25519-typescript@^0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.10.tgz#4a47c86143ca4b015ea739a64979c5a2469ac519"
-  integrity sha512-ORRugHt5AeBwMt4itMoCp8te6Ff335rY9PqDXgQC2iUrx3QeeLaPB3oD1p4JgIqlS8EmB1/P2C1JpT/ZHEl9Cw==
+"@privacyresearch/curve25519-typescript@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/curve25519-typescript/-/curve25519-typescript-0.0.12.tgz#4884b40b15c6384f550cd0b4972a497cd1323d7d"
+  integrity sha512-ASU2mjNsE838GgEqKYokka6ksjjW05dhYxRRq1aPfC/YEgS0+0OpCvNdF+oBaxjDx1ZYUHLTgV49jfkd1GQ+ig==
 
-"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.8.tgz#5f8c6f70b1f50805b06fa38d81c0994f82e8562f"
-  integrity sha512-bgvpQ7eH8izwbrXPXzfQRWjWSiPHxjtUWLIO82VYfdWRn66yk9dIbHbiqawZk88yMV23PAub1nJd3VpPdlfJqw==
+"@privacyresearch/libsignal-protocol-protobuf-ts@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@privacyresearch/libsignal-protocol-protobuf-ts/-/libsignal-protocol-protobuf-ts-0.0.9.tgz#b91565a13f919eab9a4051ddf3c39d1c3dc3daae"
+  integrity sha512-5dYQc1gL+T9u+8oqGgvSHEoSLBsecg2vbeJ9vOenchSyve4WFcLR3FHJug3ZlK/KGfDyVE4/sWd7XqyHLnqn7A==
   dependencies:
-    ts-proto "^1.26.0"
+    ts-proto "^1.83.1"
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
@@ -926,6 +926,11 @@
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/@types/object-hash/-/object-hash-1.3.3.tgz#624ed28222bd5af0f936b162589c06a2b0550161"
   integrity sha512-75t+H8u2IU1zJPPqezkGLP4YxDlj8tx7H9SgYOT1G61NjJUUEELu1Lp7RKQKXhW+FL8nV7XyD/cNFAtrKGViYQ==
+
+"@types/prettier@^1.19.0":
+  version "1.19.1"
+  resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-1.19.1.tgz#33509849f8e679e4add158959fdb086440e9553f"
+  integrity sha512-5qOlnZscTn4xxM5MeGXAMOsIOIKIbh9e85zJWfBRVPlRMEVawzoPhINYbRGkBZCI8LxvBe7tJCdWiarA99OZfQ==
 
 "@types/prettier@^2.1.5":
   version "2.4.1"
@@ -1237,10 +1242,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-base64-js@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.3.1.tgz#58ece8cb75dd07e71ed08c736abc5fac4dbf8df1"
-  integrity sha512-mLQ4i2QO1ytvGWFWmcngKO//JXAQueZvwEKtjgQFM4jIK0kU+ytMfplL8j+n5mspOfjHwoAg+9yhb7BwAHm36g==
+base64-js@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
+  integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -2946,7 +2951,7 @@ prettier-linter-helpers@^1.0.0:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@^2.4.1:
+prettier@^2.0.2, prettier@^2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.4.1.tgz#671e11c89c14a4cfc876ce564106c4a6726c9f5c"
   integrity sha512-9fbDAXSBcc6Bs1mZrDYb3XKzDLm4EXXL9sC1LqKP5rZkT6KRr/rf9amVUcODVXgguK/isJz0d0hP72WeaKWsvA==
@@ -3117,11 +3122,6 @@ semver@^7.3.5:
   integrity sha512-PoeGJYh8HK4BTO/a9Tf6ZG3veo/A7ZVsYrSA6J8ny9nb3B1VrpkuN+z9OE5wfE5p6H4LchYZsegiQgbJD94ZFQ==
   dependencies:
     lru-cache "^6.0.0"
-
-sequency@^0.19.2:
-  version "0.19.2"
-  resolved "https://registry.yarnpkg.com/sequency/-/sequency-0.19.2.tgz#3f64ad1dcfc8cce5c635ed16a889c2de2a7323ef"
-  integrity sha512-iP0psxGsDgMTgyA6wfqVJqYsFp1eDO/WFh9ylJa2sWq/TuUxLrwPrpYN2+hgmIpFLFu1agnUu9t/vRzck1YWrw==
 
 shebang-command@^2.0.0:
   version "2.0.0"
@@ -3351,11 +3351,6 @@ tr46@^2.1.0:
   dependencies:
     punycode "^2.1.1"
 
-ts-imm@0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/ts-imm/-/ts-imm-0.4.0.tgz#01a7916dd1b214ab3c578403ff0cc1faafc282da"
-  integrity sha512-slzrsTGPwoEQFTr8N9A2ZcqRLu0U3+aFpCwFtDOVmjD2b9AGSzYnHJQVDVP54kmoSD1BIM3bLN2VeOkFpu7Ycw==
-
 ts-jest@^27.0.5:
   version "27.0.5"
   resolved "https://registry.yarnpkg.com/ts-jest/-/ts-jest-27.0.5.tgz#0b0604e2271167ec43c12a69770f0bb65ad1b750"
@@ -3370,25 +3365,34 @@ ts-jest@^27.0.5:
     semver "7.x"
     yargs-parser "20.x"
 
-ts-poet@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/ts-poet/-/ts-poet-1.0.1.tgz#7dcba4fda3666dda0b72fcd1ea7b1d4cf48310c9"
-  integrity sha512-wGzYjiNKtDZqC5CXCAxwxhR0d/MJYIVvV5H+C2I2ntwK5HcFtoLNTSwfrXo0asO5WtBJ4upULCCAM02NYX7eUg==
+ts-poet@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/ts-poet/-/ts-poet-4.5.0.tgz#bb07ffe379d5a96f5e81da72a00edad45b28e9ca"
+  integrity sha512-Vs2Zsiz3zf5qdFulFTIEpaLdgWeHXKh+4pv+ycVqEh+ZuUOVGrN0i9lbxVx7DB1FBogExytz3OuaBMJfWffpSQ==
   dependencies:
+    "@types/prettier" "^1.19.0"
     lodash "^4.17.15"
-    ts-imm "0.4.0"
+    prettier "^2.0.2"
 
-ts-proto@^1.26.0:
-  version "1.26.0"
-  resolved "https://registry.yarnpkg.com/ts-proto/-/ts-proto-1.26.0.tgz#16a7d51538d2d93f9c5a2f36ed7339afa5dc89c6"
-  integrity sha512-MgT+Xhc7Am/atYdMJ+VC8+1tuZLP+FhEP88c+QcwWnLhHCZuorfq9sxDV276nwAmyqyzGDDIxS0HQT/ti6xXFA==
+ts-proto-descriptors@^1.2.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/ts-proto-descriptors/-/ts-proto-descriptors-1.3.1.tgz#760ebaaa19475b03662f7b358ffea45b9c5348f5"
+  integrity sha512-Cybb3fqceMwA6JzHdC32dIo8eVGVmXrM6TWhdk1XQVVHT/6OQqk0ioyX1dIdu3rCIBhRmWUhUE4HsyK+olmgMw==
+  dependencies:
+    long "^4.0.0"
+    protobufjs "^6.8.8"
+
+ts-proto@^1.83.1:
+  version "1.83.1"
+  resolved "https://registry.yarnpkg.com/ts-proto/-/ts-proto-1.83.1.tgz#763cf86264d7e1836dec7319ecd71994fca17fe5"
+  integrity sha512-pAB7FKIqMKjTnakvMyBB7VeIeXPl+3YPWGfp03laSRf7tGTtrt8xV9jyrLB1WU5vSzusYbz57kBCt4lqbZULqw==
   dependencies:
     "@types/object-hash" "^1.3.0"
     dataloader "^1.4.0"
     object-hash "^1.3.1"
     protobufjs "^6.8.8"
-    sequency "^0.19.2"
-    ts-poet "^1.0.1"
+    ts-poet "^4.5.0"
+    ts-proto-descriptors "^1.2.1"
 
 tslib@^1.8.1:
   version "1.13.0"
