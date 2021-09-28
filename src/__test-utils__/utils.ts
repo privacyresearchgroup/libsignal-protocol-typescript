@@ -1,5 +1,6 @@
 import { DeviceType } from '..'
 import { KeyHelper } from '../key-helper'
+import { SignalProtocolStore } from '../__test__/storage-type'
 
 export function hexToArrayBuffer(str: string): ArrayBuffer {
     const ret = new ArrayBuffer(str.length / 2)
@@ -24,7 +25,7 @@ export function assertEqualUint8Arrays(a1: Uint8Array, a2: Uint8Array): void {
     }
 }
 
-export async function generateIdentity(store) {
+export async function generateIdentity(store: SignalProtocolStore): Promise<void> {
     return Promise.all([KeyHelper.generateIdentityKeyPair(), KeyHelper.generateRegistrationId()]).then(function (
         result
     ) {
@@ -33,14 +34,19 @@ export async function generateIdentity(store) {
     })
 }
 
-export async function generatePreKeyBundle(store, preKeyId, signedPreKeyId): Promise<DeviceType<ArrayBuffer>> {
+export async function generatePreKeyBundle(
+    store: SignalProtocolStore,
+    preKeyId: number,
+    signedPreKeyId: number
+): Promise<DeviceType<ArrayBuffer>> {
     return Promise.all([store.getIdentityKeyPair(), store.getLocalRegistrationId()]).then(function (result) {
         const identity = result[0]
         const registrationId = result[1]
 
         return Promise.all([
             KeyHelper.generatePreKey(preKeyId),
-            KeyHelper.generateSignedPreKey(identity, signedPreKeyId),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            KeyHelper.generateSignedPreKey(identity!, signedPreKeyId),
         ]).then(function (keys) {
             const preKey = keys[0]
             const signedPreKey = keys[1]
@@ -49,7 +55,8 @@ export async function generatePreKeyBundle(store, preKeyId, signedPreKeyId): Pro
             store.storeSignedPreKey(signedPreKeyId, signedPreKey.keyPair)
 
             return {
-                identityKey: identity.pubKey,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                identityKey: identity!.pubKey,
                 registrationId: registrationId,
                 preKey: {
                     keyId: preKeyId,

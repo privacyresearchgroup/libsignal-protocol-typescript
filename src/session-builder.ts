@@ -78,7 +78,7 @@ export class SessionBuilder {
         IKb: ArrayBuffer,
         SPKb: ArrayBuffer,
         OPKb: ArrayBuffer | undefined,
-        registrationId: number
+        registrationId?: number
     ): Promise<SessionType> => {
         const IKa = await this.storage.getIdentityKeyPair()
 

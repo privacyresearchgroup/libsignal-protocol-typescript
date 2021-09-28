@@ -14,7 +14,7 @@ import { uint8ArrayToArrayBuffer } from './helpers'
 export interface MessageType {
     type: number
     body?: string
-    registrationId: number
+    registrationId?: number
 }
 export class SessionCipher {
     storage: StorageType
