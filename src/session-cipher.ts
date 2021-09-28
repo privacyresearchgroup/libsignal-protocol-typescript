@@ -279,7 +279,7 @@ export class SessionCipher {
 
             return { plaintext: plaintext, session: session }
         } catch (e) {
-            if (e.name === 'MessageCounterError') {
+            if ((e as Error).name === 'MessageCounterError') {
                 return Promise.reject(e)
             }
 

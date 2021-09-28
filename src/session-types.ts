@@ -42,7 +42,7 @@ export interface OldRatchetInfo<T> {
 
 export interface Chain<T> {
     chainType: ChainType
-    chainKey: { key: T; counter: number }
+    chainKey: { key?: T; counter: number }
     messageKeys: { [key: number]: T }
 }
 

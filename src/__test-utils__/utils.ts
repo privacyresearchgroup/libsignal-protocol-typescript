@@ -1,3 +1,4 @@
+import { DeviceType } from '..'
 import { KeyHelper } from '../key-helper'
 
 export function hexToArrayBuffer(str: string): ArrayBuffer {
@@ -32,7 +33,7 @@ export async function generateIdentity(store) {
     })
 }
 
-export async function generatePreKeyBundle(store, preKeyId, signedPreKeyId) {
+export async function generatePreKeyBundle(store, preKeyId, signedPreKeyId): Promise<DeviceType<ArrayBuffer>> {
     return Promise.all([store.getIdentityKeyPair(), store.getLocalRegistrationId()]).then(function (result) {
         const identity = result[0]
         const registrationId = result[1]
