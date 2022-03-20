@@ -29,6 +29,11 @@ describe('basic prekey v3', function () {
     })
 
     const originalMessage = <ArrayBuffer>utils.binaryStringToArrayBuffer("L'homme est condamné à être libre")
+    const nextMessage = <ArrayBuffer>(
+        utils.binaryStringToArrayBuffer(
+            "condamné parce qu'il ne s'est pas crée lui-même, et par ailleurs cependant libre parce qu'une fois jeté dans le monde, il est responsable de tout ce qu'il fait."
+        )
+    )
     const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
     const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
@@ -45,6 +50,17 @@ describe('basic prekey v3', function () {
         expect(ciphertext.type).toBe(3) // PREKEY_BUNDLE
         const plaintext = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body!, 'binary')
         assertEqualArrayBuffers(plaintext, originalMessage) // assertEqualArrayBuffers(plaintext, originalMessage)
+    })
+
+    test('basic v3 NO PREKEY: the session can decrypt multiple v3 messages', async () => {
+        const ciphertext0 = await aliceSessionCipher.encrypt(originalMessage)
+        expect(ciphertext0.type).toBe(3) // PREKEY_BUNDLE
+        const ciphertext1 = await aliceSessionCipher.encrypt(nextMessage)
+        expect(ciphertext1.type).toBe(3) // PREKEY_BUNDLE
+        const plaintext0 = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext0.body!, 'binary')
+        assertEqualArrayBuffers(plaintext0, originalMessage)
+        const plaintext1 = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext1.body!, 'binary')
+        assertEqualArrayBuffers(plaintext1, nextMessage)
     })
 
     test('basic prekey v3: the session can decrypt', async () => {
@@ -97,6 +113,11 @@ describe('basic v3 NO PREKEY', function () {
     })
 
     const originalMessage = <ArrayBuffer>utils.binaryStringToArrayBuffer("L'homme est condamné à être libre")
+    const nextMessage = <ArrayBuffer>(
+        utils.binaryStringToArrayBuffer(
+            "condamné parce qu'il ne s'est pas crée lui-même, et par ailleurs cependant libre parce qu'une fois jeté dans le monde, il est responsable de tout ce qu'il fait."
+        )
+    )
     const aliceSessionCipher = new SessionCipher(aliceStore, BOB_ADDRESS)
     const bobSessionCipher = new SessionCipher(bobStore, ALICE_ADDRESS)
 
@@ -115,6 +136,17 @@ describe('basic v3 NO PREKEY', function () {
         const plaintext = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body!, 'binary')
 
         assertEqualArrayBuffers(plaintext, originalMessage)
+    })
+
+    test('basic v3 NO PREKEY: the session can decrypt multiple v3 messages', async () => {
+        const ciphertext0 = await aliceSessionCipher.encrypt(originalMessage)
+        expect(ciphertext0.type).toBe(3) // PREKEY_BUNDLE
+        const ciphertext1 = await aliceSessionCipher.encrypt(nextMessage)
+        expect(ciphertext1.type).toBe(3) // PREKEY_BUNDLE
+        const plaintext0 = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext0.body!, 'binary')
+        assertEqualArrayBuffers(plaintext0, originalMessage)
+        const plaintext1 = await bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext1.body!, 'binary')
+        assertEqualArrayBuffers(plaintext1, nextMessage)
     })
 
     test('basic v3 NO PREKEY: the session can decrypt', async () => {
