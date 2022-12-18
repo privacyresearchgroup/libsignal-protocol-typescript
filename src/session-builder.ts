@@ -55,7 +55,7 @@ export class SessionBuilder {
         const address = this.remoteAddress.toString()
         const serialized = await this.storage.loadSession(address)
         let record: SessionRecord
-        if (serialized !== undefined) {
+        if (serialized !== undefined && serialized != null) {
             record = SessionRecord.deserialize(serialized)
         } else {
             record = new SessionRecord()
