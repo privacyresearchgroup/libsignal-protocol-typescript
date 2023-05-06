@@ -53,8 +53,8 @@ export interface PendingPreKey<T> {
 }
 
 export enum EncryptionResultMessageType {
-    PreKeyWhisperMessage = 1,
-    WhisperMessage = 3,
+    WhisperMessage = 1,
+    PreKeyWhisperMessage = 3,
 }
 
 export interface EncryptionResult {
